@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset=utf-8>
+<html>
+<head>
+<style>
+html {
+  font-family: sans-serif;
+  padding: 3em;
+  background-color: #eee;
+}
+div {
+  padding: 1em;
+  margin: 0 auto;
+}
+.wrap {
+  display: flex;
+  align-items: center;
+  flex-direction: column;  /* make main axis vertical */
+}
+input,output {
+  display: inline-block;
+  vertical-align: middle;
+}
+h2 {
+  margin-top: -0.5em;
+  font-weight: 400;
+}
+</style>
+<meta name="viewport" content="width=600,initial-scale=1">
+</head>
+<body>
+<div class=wrap>
+  <h1>Wait-free ring buffer demo page</h1>
+  <div>
+    <button class=start>Start</button>
+  </div>
+  <div>
+    <p>
+    Frequency parameter:
+    <input type=range class="freq" min="20" max="4000" value="440" step="1"></input>
+    (<span class=freqLabel>440</span>)
+    </p>
+    <p>
+    Amplitude parameter:
+    <input type=range class="amp" min="0" max="1.0" value="1.0" step="0.01"></input>
+    (<span class=ampLabel>1.0</span>)
+    </p>
+  </div>
+</div>
+<script src="js/utils.js"></script>
+<script src="js/ringbuf.js"></script>
+<script src="js/param.js"></script>
+<script src="js/audioqueue.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

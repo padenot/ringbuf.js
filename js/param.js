@@ -16,7 +16,7 @@
 // An element is a index, that is an unsigned byte, and a float32, which is 4
 // bytes.
 
-class ParameterWriter {
+export class ParameterWriter {
   // From a RingBuffer, build an object that can enqueue a parameter change in
   // the queue.
   constructor(ringbuf) {
@@ -43,7 +43,7 @@ class ParameterWriter {
   }
 }
 
-class ParameterReader {
+export class ParameterReader {
   constructor(ringbuf) {
     const SIZE_ELEMENT = 5;
     this.ringbuf = ringbuf;

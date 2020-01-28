@@ -18,7 +18,7 @@
 // This is useful to get data from a codec, the network, or anything that is
 // interleaved, into planar format, for example a Web Audio API AudioBuffer or
 // the output parameter of an AudioWorkletProcessor.
-function deinterleave(input, output) {
+export function deinterleave(input, output) {
   var channel_count = input.length / 256;
   if (output.length != channel_count) {
     throw "not enough space in output arrays";
@@ -38,8 +38,8 @@ function deinterleave(input, output) {
 // output is a Float32Array that is n*128 elements long. This function is useful
 // to get data from the Web Audio API (that does planar audio), into something
 // that codec or network streaming library expect.
-function interleave(input, output) {
-  if (input.length*128 != output.length) {
+export function interleave(input, output) {
+  if (input.length * 128 != output.length) {
     throw "input and output of incompatible sizes";
   }
   var out_idx = 0;
@@ -51,7 +51,7 @@ function interleave(input, output) {
   }
 }
 
-class AudioWriter {
+export class AudioWriter {
   // From a RingBuffer, build an object that can enqueue enqueue audio in a ring
   // buffer.
   constructor(ringbuf) {
@@ -74,7 +74,7 @@ class AudioWriter {
   }
 }
 
-class AudioReader {
+export class AudioReader {
   constructor(ringbuf) {
     if (ringbuf.type() != "Float32Array") {
       throw "This class requires a ring buffer of Float32Array";

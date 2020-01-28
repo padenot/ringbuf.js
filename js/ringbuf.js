@@ -3,7 +3,7 @@
 // The producer and the consumer can be separate thread, but cannot change role,
 // except with external synchronization.
 
-class RingBuffer {
+export class RingBuffer {
   static getStorageForCapacity(capacity, type) {
     if (!type.BYTES_PER_ELEMENT) {
       throw "Pass in a ArrayBuffer subclass";
@@ -15,7 +15,7 @@ class RingBuffer {
   // `getStorageForCapacity` with the desired capacity.
   constructor(sab, type) {
     if (!ArrayBuffer.__proto__.isPrototypeOf(type) &&
-        type.BYTES_PER_ELEMENT !== undefined) {
+      type.BYTES_PER_ELEMENT !== undefined) {
       throw "Pass a concrete typed array class as second argument";
     }
 

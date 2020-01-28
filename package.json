@@ -1,0 +1,30 @@
+{
+  "name": "ringbuf.js",
+  "version": "0.1.0",
+  "description": "wait-free single-consumer single-producer ring buffer using SharedArrayBuffer.",
+  "author": "padenot",
+  "license": "MPL 2.0",
+  "repository": "padenot/ringbuf.js",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "jsnext:main": "dist/index.es.js",
+  "engines": {
+    "node": ">=8",
+    "npm": ">=5"
+  },
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/runtime": "^7.3.1",
+    "cross-env": "^5.2.0",
+    "rollup": "^1.2.2",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -3,10 +3,16 @@
 A thread-safe wait-free single-consumer single-producer ring buffer for the web,
 and some utilities.
 
-- `js/ringbuf.js`: base data structure
-- `js/audioqueue.js`: wrapper for audio data streaming
-- `js/param.js`: wrapper for parameter changes
+The main files of this library:
 
+- `js/ringbuf.js`: base data structure, implementing the ring-buffer. This is
+  intentionally heavily commented.
+- `js/audioqueue.js`: wrapper for audio data streaming, without using
+  `postMessage`.
+- `js/param.js`: wrapper for parameter changes, allowing to send pairs of index
+  and value without using `postMessage`.
+
+This library contains an example, explained below, with the following files:
 
 - `example/app.js`: example usage, main thread side (send audio and param
   changes to the real-time thread)
@@ -14,7 +20,7 @@ and some utilities.
   and parameter changes from the main thread)
 - `example/utils.js`: helper to load multiple files in an `AudioWorkletGlobalScope`
 - `example/index.js`: vendored and built version of the library to have the
-  examples easily online.
+  example easily online.
 
 ## Demo and use-cases
 
@@ -51,21 +57,22 @@ The opposite (recording the input of an `AudioWorklet`) is very useful:
 
 ## Run locally
 
-`node server.js`
+> `cd example; node server.js`
 
-This is a simple web server that set the right headers to use
+This is a simple web server that sets the right headers to use
 `SharedArrayBuffer` (see [Planned changes to shared memory
 ](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/Planned_changes)
 on MDN), and uses `https` (however this requires a bit of manual setup,
-[mkcert](https://github.com/FiloSottile/mkcert) can be useful).
+[mkcert](https://github.com/FiloSottile/mkcert) can be useful, read the source,
+it's not particularly complicated).
 
 ## Contribute
 
 Please do (just open an issue or send a PR).
 
-## Authors
+> `npm run-script build`
 
-Paul Adenot, Mozilla
+allows running the build step and copying the file to allow the example to work.
 
 ## License
 

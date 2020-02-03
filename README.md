@@ -14,7 +14,9 @@ and some utilities.
 
 ## Demo and use-cases
 
-<https://padenot.github.io/ringbuf.js>
+<https://padenot.github.io/ringbuf.js> (this will not work when Chrome will
+implement [COOP and
+COEP](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/Planned_changes)).
 
 A sine wave is generated on the main thread, sent to the audio thread, played
 out. The frequency of this sine wave is controllable from the main thread. The

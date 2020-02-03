@@ -3,20 +3,25 @@
 A thread-safe wait-free single-consumer single-producer ring buffer for the web,
 and some utilities.
 
-- `js/app.js`: example usage, main thread side (send audio and param changes to
-  the real-time thread)
-- `js/processor.js`: example usage, real-time thread side (receive audio and
-  parameter changes from the main thread)
 - `js/ringbuf.js`: base data structure
 - `js/audioqueue.js`: wrapper for audio data streaming
 - `js/param.js`: wrapper for parameter changes
-- `js/utils.js`: helper to load multiple files in an `AudioWorkletGlobalScope`
+
+
+- `example/app.js`: example usage, main thread side (send audio and param
+  changes to the real-time thread)
+- `example/processor.js`: example usage, real-time thread side (receive audio
+  and parameter changes from the main thread)
+- `example/utils.js`: helper to load multiple files in an `AudioWorkletGlobalScope`
+- `example/index.js`: vendored and built version of the library to have the
+  examples easily online.
 
 ## Demo and use-cases
 
-<https://padenot.github.io/ringbuf.js/example> (this will not work when Chrome will
+- <https://padenot.github.io/ringbuf.js/example/> (this will not work when Chrome will
 implement [COOP and
 COEP](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/Planned_changes)).
+- <https://paul.cx/ringbuf.js/>
 
 A sine wave is generated on the main thread, sent to the audio thread, played
 out. The frequency of this sine wave is controllable from the main thread. The

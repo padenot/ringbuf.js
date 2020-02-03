@@ -1,3 +1,5 @@
+var exports = {};
+
 class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [];

@@ -1,14 +1,11 @@
 const $ = document.querySelectorAll.bind(document);
 
-const ctx = new AudioContext(),
-  frequency = 440,
-  phase = 0.0,
-  sine = new Float32Array(128);
+const ctx = new AudioContext();
+var frequency = 440,
+    phase = 0.0,
+    sine = new Float32Array(128);
 
-URLFromFiles(['js/audioqueue.js',
-  'example/processor.js',
-  'js/ringbuf.js',
-  'js/param.js']).then((e) => {
+URLFromFiles(['processor.js', 'index.js']).then((e) => {
     if (ctx.audioWorklet === undefined) {
       alert("no audioworklet");
     } else {
@@ -17,16 +14,16 @@ URLFromFiles(['js/audioqueue.js',
         n.connect(ctx.destination);
 
         // 50ms of buffer, increase in case of glitches
-        let sab = RingBuffer.getStorageForCapacity(ctx.sampleRate / 20, Float32Array);
-        let rb = new RingBuffer(sab, Float32Array);
-        audioWriter = new AudioWriter(rb);
+        let sab = exports.RingBuffer.getStorageForCapacity(ctx.sampleRate / 20, Float32Array);
+        let rb = new exports.RingBuffer(sab, Float32Array);
+        audioWriter = new exports.AudioWriter(rb);
         n.port.postMessage({
           type: "recv-audio-queue",
           data: sab,
         });
 
-        let sab2 = RingBuffer.getStorageForCapacity(31, Uint8Array);
-        let rb2 = new RingBuffer(sab2, Uint8Array);
+        let sab2 = exports.RingBuffer.getStorageForCapacity(31, Uint8Array);
+        let rb2 = new exports.RingBuffer(sab2, Uint8Array);
         paramWriter = new ParameterWriter(rb2);
         n.port.postMessage({
           type: "recv-param-queue",

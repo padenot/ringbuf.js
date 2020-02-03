@@ -123,7 +123,7 @@ export class RingBuffer {
   }
 
   // Number of elements available for writing. This can be late, and report less
-  // elemtns that is actually available for writing, when something has just
+  // elements that is actually available for writing, when something has just
   // been dequeued.
   available_write() {
     var rd = Atomics.load(this.read_ptr, 0);

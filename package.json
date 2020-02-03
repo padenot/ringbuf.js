@@ -1,8 +1,8 @@
 {
   "name": "ringbuf.js",
   "version": "0.1.0",
-  "description": "wait-free single-consumer single-producer ring buffer using SharedArrayBuffer.",
-  "author": "padenot",
+  "description": "Wait-free thread-safe single-consumer single-producer ring buffer using SharedArrayBuffer.",
+  "author": "Paul Adenot <padenot@mozilla.com>",
   "license": "MPL-2.0",
   "repository": "padenot/ringbuf.js",
   "main": "dist/index.js",

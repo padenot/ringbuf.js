@@ -14,7 +14,7 @@ and some utilities.
 
 ## Demo and use-cases
 
-<https://padenot.github.io/ringbuf.js> (this will not work when Chrome will
+<https://padenot.github.io/ringbuf.js/example> (this will not work when Chrome will
 implement [COOP and
 COEP](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/Planned_changes)).
 

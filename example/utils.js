@@ -3,25 +3,16 @@
 // structure, main DSP, etc.) without either using static imports, eval, manual
 // concatenation with or without a build step, etc.
 function URLFromFiles(files) {
-  var promises = [];
-  for (var file of files) {
-    promises.push(fetch(file));
-  }
-  var final = "";
-  var count = 0;
-  return new Promise(function(resolve, reject) {
-    Promise.all(promises).then((p) => {
-      p.forEach((e)=> {
-        e.text().then((t)=> {
-          final+=t;
-          count++;
-          if (count == files.length) {
-            var b = new Blob([final], {type: "application/javascript"});
-            var url = URL.createObjectURL(b);
-            resolve(url);
-          }
-        });
-      });
+  const promises = files
+    .map((file) => fetch(file)
+      .then((response) => response.text()));
+
+  return Promise
+    .all(promises)
+    .then((texts) => {
+      const text = texts.join('');
+      const blob = new Blob([text], {type: "application/javascript"});
+
+      return URL.createObjectURL(blob);
     });
-  });
 }

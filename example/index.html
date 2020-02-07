@@ -9,7 +9,8 @@ html {
   background-color: #eee;
 }
 div {
-  padding: 1em;
+  max-width: 30em;
+  padding-top: 1em;
   margin: 0 auto;
 }
 .wrap {
@@ -35,6 +36,8 @@ a {
 a:visited {
   color: #66a;
 }
+p {
+}
 </style>
 <meta name="viewport" content="width=600,initial-scale=1">
 </head>
@@ -47,6 +50,17 @@ a:visited {
       <li> <a href=https://github.com/padenot/ringbuf.js>https://github.com/padenot/ringbuf.js</a>
       <li> <a href=https://www.npmjs.com/package/ringbuf.js>https://www.npmjs.com/package/ringbuf.js</a>
     </ul>
+  </div>
+  <div>
+    <p>
+    A sine wave is generated on the main thread, sent to the audio thread,
+    played out, all this without locking. The frequency of this sine wave is
+    controllable from the main thread. The amplitude of this sine wave is also
+    controllable: the amplitude parameter is communicated safely, but without
+    locking to the real-time thread. Please see the file
+    <a href=https://github.com/padenot/ringbuf.js/blob/master/README.md>
+      README.md</a> in the source directory for more information.
+    </p>
   </div>
   <div>
     <button class=start>Start</button>
@@ -67,7 +81,7 @@ a:visited {
   </div>
 </div>
 <script>
-  exports = {};
+exports = {};
 </script>
 <script src="utils.js"></script>
 <script src="index.js"></script>

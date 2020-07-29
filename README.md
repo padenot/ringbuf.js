@@ -24,14 +24,12 @@ This library contains an example, explained below, with the following files:
 
 ## Demo and use-cases
 
-<https://paul.cx/ringbuf.js/> is a deployment of the example in this repository
+<https://ringbuf-js.netlify.app/> is a deployment of the example in this repository
 with a web server that answers with the right headers for this directory, and
 allows the example to work. More details available at [Planned changes to shared memory
 ](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/Planned_changes).
 
-As of 2020-02-07, this example works in Chrome and [Firefox
-Nightly](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly) (with a
-pref flipped).
+As of 2020-07-28, this example works in Chrome and Firefox.
 
 A sine wave is generated on the main thread, sent to the audio thread, played
 out. The frequency of this sine wave is controllable from the main thread. The

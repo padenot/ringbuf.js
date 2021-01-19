@@ -56,6 +56,7 @@ The opposite (recording the input of an `AudioWorklet`) is very useful:
   thread load)
 - Implement off-main-thread off-real-time thread encoding of audio data in a
   codec not supported by `MediaRecorder`, or maybe with more flexibility.
+- Implement infinite audio streams, Web radio stations.
 
 ## Run locally
 

@@ -78,7 +78,7 @@ export class RingBuffer {
 
     let to_read = Math.min(this._available_read(rd, wr), elements.length);
 
-    let first_part = Math.min(this._storage_capacity() - rd, elements.length);
+    let first_part = Math.min(this._storage_capacity() - rd, to_read);
     let second_part = to_read - first_part;
 
     this._copy(this.storage, rd, elements, 0, first_part);

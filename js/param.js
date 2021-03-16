@@ -4,7 +4,7 @@
 // (in an AudioWorkletProcessor). Write and Reader cannot change role after
 // setup, unless externally synchronized.
 //
-// GC can happen during the initial construction of this object when hopefully
+// GC _can_ happen during the initial construction of this object when hopefully
 // no audio is being output. This depends on the implementation.
 //
 // Parameter changes are like in the VST framework: an index and a float value
@@ -13,7 +13,7 @@
 // This class supports up to 256 parameters, but this is easy to extend if
 // needed.
 //
-// An element is a index, that is an unsigned byte, and a float32, which is 4
+// An element is an index, that is an unsigned byte, and a float32, which is 4
 // bytes.
 
 export class ParameterWriter {

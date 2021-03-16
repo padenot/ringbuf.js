@@ -1,6 +1,6 @@
 // A Single Producer - Single Consumer thread-safe wait-free ring buffer.
 //
-// The producer and the consumer can be separate thread, but cannot change role,
+// The producer and the consumer can be on separate threads, but cannot change roles,
 // except with external synchronization.
 
 export class RingBuffer {
@@ -36,7 +36,7 @@ export class RingBuffer {
   type() {
     return this._type.name;
   }
-  // Push bytes to the ring buffer. `bytes` is an typed array of the same type
+  // Push bytes to the ring buffer. `bytes` is a typed array of the same type
   // as passed in the ctor, to be written to the queue.
   // Returns the number of elements written to the queue.
   push(elements) {
@@ -99,7 +99,7 @@ export class RingBuffer {
   }
 
   // True if the ring buffer is full, false otherwise. This can be late on the
-  // write side: it can return true when something has just been poped.
+  // write side: it can return true when something has just been popped.
   full() {
     var rd = Atomics.load(this.read_ptr, 0);
     var wr = Atomics.load(this.write_ptr, 0);

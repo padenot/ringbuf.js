@@ -1,22 +1,22 @@
-// Send audio interleaved audio frames between threads, wait-free.
+// Send interleaved audio frames between threads, wait-free.
 //
-// Those classes allow communicating between a non-real time thread (browser
+// These classes allow for communicating between a non-real time thread (browser
 // main thread or worker) and a real-time thread (in an AudioWorkletProcessor).
 // Write and Reader cannot change role after setup, unless externally
 // synchronized.
 //
 // GC _can_ happen during the initial construction of this object when hopefully
 // no audio is being output. This depends on how implementations schedule GC
-// passes. After the setup phase no GC is triggered on either side of the queue..
+// passes. After the setup phase no GC is triggered on either side of the queue.
 
 // Interleaved -> Planar audio buffer conversion
 //
 // `input` is an array of n*128 frames arrays, interleaved, where n is the
 // channel count.
-// output is an array of 128-frames arrays.
+// `output` is an array of 128-frames arrays.
 //
 // This is useful to get data from a codec, the network, or anything that is
-// interleaved, into planar format, for example a Web Audio API AudioBuffer or
+// interleaved, into a planar format, for example a Web Audio API AudioBuffer or
 // the output parameter of an AudioWorkletProcessor.
 export function deinterleave(input, output) {
   var channel_count = input.length / 256;
@@ -34,10 +34,10 @@ export function deinterleave(input, output) {
 }
 // Planar -> Interleaved audio buffer conversion
 //
-// Input is an array of `n` 128 frames Float32Array that hold the audio data.
+// `input` is an array of n*128 frames Float32Array that hold the audio data.
 // output is a Float32Array that is n*128 elements long. This function is useful
-// to get data from the Web Audio API (that does planar audio), into something
-// that codec or network streaming library expect.
+// to get data from the Web Audio API (that uses a planar format), into something
+// that a codec or network streaming library would expect.
 export function interleave(input, output) {
   if (input.length * 128 != output.length) {
     throw "input and output of incompatible sizes";

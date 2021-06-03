@@ -6,6 +6,7 @@ function log(str) {
 }
 
 const ctx = new AudioContext();
+ctx.suspend();
 var frequency = 440,
     phase = 0.0,
     sine = new Float32Array(128);

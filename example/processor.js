@@ -5,22 +5,15 @@ class Processor extends AudioWorkletProcessor {
     return [];
   }
 
-  constructor() {
-    super();
+  constructor(options) {
+    super(options);
     this.interleaved = new Float32Array(128);
     this.amp = 1.0;
     this.o = { index: 0, value: 0 };
-    this.port.onmessage = e => {
-      this._size = 128;
-      if (e.data.type === "recv-audio-queue") {
-        this._audio_reader = new AudioReader(new RingBuffer(e.data.data, Float32Array));
-      } else if (e.data.type === "recv-param-queue") {
-        this._param_reader = new ParameterReader(new RingBuffer(e.data.data, Uint8Array));
-      } else {
-        throw "unexpected.";
-      }
-    };
-  }
+    const { audioQueue, paramQueue } = options.processorOptions;
+    this._audio_reader = new AudioReader(new RingBuffer(audioQueue, Float32Array));
+    this._param_reader = new ParameterReader(new RingBuffer(paramQueue, Uint8Array));
+}
 
   process(inputs, outputs, parameters) {
     // Get any param changes

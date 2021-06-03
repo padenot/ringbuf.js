@@ -16,30 +16,22 @@ URLFromFiles(['processor.js', 'index.js']).then((e) => {
       log("No AudioWorklet. In Firefox, try going to about:config and flipping dom.audioworklet.enabled to true.")
     } else {
       ctx.audioWorklet.addModule(e).then(() => {
-        const n = new AudioWorkletNode(ctx, "processor", [1]);
-        n.connect(ctx.destination);
-
         // 50ms of buffer, increase in case of glitches
         let sab = exports.RingBuffer.getStorageForCapacity(ctx.sampleRate / 20, Float32Array);
         let rb = new exports.RingBuffer(sab, Float32Array);
         audioWriter = new exports.AudioWriter(rb);
-        try {
-          n.port.postMessage({
-            type: "recv-audio-queue",
-            data: sab,
-          });
-        } catch(_){
-          log("No SharedArrayBuffer tranfer support, try another browser.");
-          return;
-        }
 
         let sab2 = exports.RingBuffer.getStorageForCapacity(31, Uint8Array);
         let rb2 = new exports.RingBuffer(sab2, Uint8Array);
         paramWriter = new ParameterWriter(rb2);
-        n.port.postMessage({
-          type: "recv-param-queue",
-          data: sab2
+
+        const n = new AudioWorkletNode(ctx, "processor", {
+          processorOptions: {
+            audioQueue: sab,
+            paramQueue: sab2
+          }     
         });
+        n.connect(ctx.destination);
 
         const freq = $(".freq")[0];
         const label = $(".freqLabel")[0];

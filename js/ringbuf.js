@@ -64,6 +64,42 @@ export class RingBuffer {
 
     return to_write;
   }
+
+  // Write bytes to the ring buffer using callbacks. This create wrapper
+  // objects and can GC, so it's best to no use this variant from a real-time
+  // thread such as an AudioWorklerProcessor `process` method.
+  // The callback is passed two typed arrays of the same type, to be filled.
+  // This allows skipping copies if the API that produces the data writes is
+  // passed arrays to write to, such as `AudioData.copyTo`.
+  writeCallback(amount, cb) {
+    var rd = Atomics.load(this.read_ptr, 0);
+    var wr = Atomics.load(this.write_ptr, 0);
+
+    if ((wr + 1) % this._storage_capacity() == rd) {
+      // full
+      return 0;
+    }
+
+    let to_write = Math.min(this._available_write(rd, wr), amount);
+    let first_part = Math.min(this._storage_capacity() - wr, to_write);
+    let second_part = to_write - first_part;
+
+    // This part will cause GC: don't use in the real time thread.
+    var first_part_buf = new this._type(this.storage.buffer, 8 + wr * 4, first_part);
+    var second_part_buf = new this._type(this.storage.buffer, 8 + 0, second_part);
+
+    cb(first_part_buf, second_part_buf);
+
+    // publish the enqueued data to the other side
+    Atomics.store(
+      this.write_ptr,
+      0,
+      (wr + to_write) % this._storage_capacity()
+    );
+
+    return to_write;
+  }
+
   // Read `elements.length` elements from the ring buffer. `elements` is a typed
   // array of the same type as passed in the ctor.
   // Returns the number of elements read from the queue, they are placed at the

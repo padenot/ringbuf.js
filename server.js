@@ -1,4 +1,4 @@
-const https = require('https'),
+const http = require('http'),
     url = require("url"),
     path = require("path"),
     fs = require("fs"),
@@ -13,13 +13,7 @@ const https = require('https'),
       "css": "text/css"
     };
 
-const options = {
-  key: fs.readFileSync('example.com+5-key.pem'),
-  cert: fs.readFileSync('example.com+5.pem')
-};
-
-https.createServer(options, function(request, response) {
-
+http.createServer(function(request, response) {
   var uri = url.parse(request.url).pathname,
     filename = path.join(process.cwd(), uri);
 

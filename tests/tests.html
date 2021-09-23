@@ -1,0 +1,44 @@
+<style>
+.pass {
+  color: green;
+}
+.fail {
+  color: red;
+}
+</style>
+<div id=log></div>
+<script type=module>
+  import {RingBuffer} from '../js/ringbuf.js';
+
+  window.$ = document.querySelector.bind(document);
+  function fail(str) {
+    var line = document.createElement("div");
+    line.className = "fail";
+    line.textContent = str;
+    $('#log').appendChild(line);
+  }
+  function pass(str) {
+    var line = document.createElement("div");
+    line.className = "pass";
+    line.textContent = str;
+    $('#log').appendChild(line);
+  }
+  function is(a, b, str) {
+    if (a != b) {
+      fail(`${str}: ${a} != ${b}`)
+    } else {
+      pass(`${str}: ${a} == ${b}`)
+    }
+  }
+  function basicAPITests() {
+    var size_increment = 7;
+    for (var i = 1; i < 12345; i+=size_increment) {
+      var sab = RingBuffer.getStorageForCapacity(i, Float32Array);
+      var rb = new RingBuffer(sab, Float32Array);
+      is(rb.available_write(), i, "An empty ringbuffer should have full capacity to write.");
+      is(rb.available_read(), 0, "An empty ringbuffer should have nothing available to read.");
+    }
+  }
+
+  basicAPITests();
+</script>

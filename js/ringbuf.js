@@ -25,18 +25,18 @@ export class RingBuffer {
     // -4 for the read ptr (uint32_t offsets)
     // capacity counts the empty slot to distinguish between full and empty.
     this._type = type;
-    this.capacity = (sab.byteLength - 8) / type.BYTES_PER_ELEMENT;
+    this._capacity = (sab.byteLength - 8) / type.BYTES_PER_ELEMENT;
     this.buf = sab;
     this.write_ptr = new Uint32Array(this.buf, 0, 1);
     this.read_ptr = new Uint32Array(this.buf, 4, 1);
-    this.storage = new type(this.buf, 8, this.capacity);
+    this.storage = new type(this.buf, 8, this._capacity);
   }
   // Returns the type of the underlying ArrayBuffer for this RingBuffer. This
   // allows implementing crude type checking.
   type() {
     return this._type.name;
   }
-  // Push bytes to the ring buffer. `bytes` is a typed array of the same type
+  // Push bytes to the ring buffer. `elements` is a typed array of the same type
   // as passed in the ctor, to be written to the queue.
   // Returns the number of elements written to the queue.
   push(elements) {
@@ -104,13 +104,13 @@ export class RingBuffer {
     var rd = Atomics.load(this.read_ptr, 0);
     var wr = Atomics.load(this.write_ptr, 0);
 
-    return (wr + 1) % this.capacity != rd;
+    return (wr + 1) % this._storage_capacity() == rd;
   }
 
   // The usable capacity for the ring buffer: the number of elements that can be
   // stored.
   capacity() {
-    return this.capacity - 1;
+    return this._capacity - 1;
   }
 
   // Number of elements available for reading. This can be late, and report less
@@ -135,25 +135,18 @@ export class RingBuffer {
 
   // Number of elements available for reading, given a read and write pointer..
   _available_read(rd, wr) {
-    if (wr > rd) {
-      return wr - rd;
-    } else {
-      return wr + this._storage_capacity() - rd;
-    }
+    return (wr + this._storage_capacity() - rd) % this._storage_capacity();
   }
 
   // Number of elements available from writing, given a read and write pointer.
   _available_write(rd, wr) {
-    let rv = rd - wr - 1;
-    if (wr >= rd) {
-      rv += this._storage_capacity();
-    }
-    return rv;
+    return this.capacity() - this._available_read(rd, wr);
   }
 
-  // The size of the storage for elements not accounting the space for the index.
+  // The size of the storage for elements not accounting the space for the
+  // index, counting the empty slot.
   _storage_capacity() {
-    return this.capacity;
+    return this._capacity;
   }
 
   // Copy `size` elements from `input`, starting at offset `offset_input`, to

@@ -48,7 +48,7 @@ function interleave(input, output) {
   }
   var out_idx = 0;
   for (var i = 0; i < 128; i++) {
-    for (var channel = 0; j < output.length; j++) {
+    for (var channel = 0; channel < input.length; channel++) {
       output[out_idx] = input[channel][i];
       out_idx++;
     }

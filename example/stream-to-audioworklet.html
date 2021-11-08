@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset=utf-8>
+<html>
+<head>
+<link rel=stylesheet href=style.css>
+<meta name="viewport" content="width=600,initial-scale=1">
+</head>
+<body>
+<div class=wrap>
+  <a class=back href=index.html>Back to main</a>
+  <h1>Streaming audio and parameter changes to an <code>AudioWorkletProcessor</code></h1>
+  <div>
+    Source code and library available at:
+    <ul>
+      <li> <a href=https://github.com/padenot/ringbuf.js>https://github.com/padenot/ringbuf.js</a>
+      <li> <a href=https://www.npmjs.com/package/ringbuf.js>https://www.npmjs.com/package/ringbuf.js</a>
+    </ul>
+  </div>
+  <div>
+    <p>
+    A sine wave is generated on the main thread, sent to the audio thread,
+    played out, all this without locking. The frequency of this sine wave is
+    controllable from the main thread. The amplitude of this sine wave is also
+    controllable: the amplitude parameter is communicated safely, but without
+    locking to the real-time thread. Please see the file
+    <a href=https://github.com/padenot/ringbuf.js/blob/master/README.md>
+      README.md</a> in the source directory for more information.
+    </p>
+  </div>
+  <div>
+    <button class=start>Start</button>
+  </div>
+  <div id=log>
+  </div>
+  <div>
+    <p>
+    Frequency parameter:
+    <input type=range class="freq" min="20" max="4000" value="440" step="1"></input>
+    (<span class=freqLabel>440</span>)
+    </p>
+    <p>
+    Amplitude parameter:
+    <input type=range class="amp" min="0" max="1.0" value="1.0" step="0.01"></input>
+    (<span class=ampLabel>1.0</span>)
+    </p>
+  </div>
+</div>
+<script>
+exports = {};
+</script>
+<script src="utils.js"></script>
+<script src="index.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

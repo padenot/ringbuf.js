@@ -2,25 +2,25 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-// Send audio interleaved audio frames between threads, wait-free.
+// Send interleaved audio frames between threads, wait-free.
 //
-// Those classes allow communicating between a non-real time thread (browser
+// These classes allow for communicating between a non-real time thread (browser
 // main thread or worker) and a real-time thread (in an AudioWorkletProcessor).
 // Write and Reader cannot change role after setup, unless externally
 // synchronized.
 //
 // GC _can_ happen during the initial construction of this object when hopefully
 // no audio is being output. This depends on how implementations schedule GC
-// passes. After the setup phase no GC is triggered on either side of the queue..
+// passes. After the setup phase no GC is triggered on either side of the queue.
 
 // Interleaved -> Planar audio buffer conversion
 //
 // `input` is an array of n*128 frames arrays, interleaved, where n is the
 // channel count.
-// output is an array of 128-frames arrays.
+// `output` is an array of 128-frames arrays.
 //
 // This is useful to get data from a codec, the network, or anything that is
-// interleaved, into planar format, for example a Web Audio API AudioBuffer or
+// interleaved, into a planar format, for example a Web Audio API AudioBuffer or
 // the output parameter of an AudioWorkletProcessor.
 function deinterleave(input, output) {
   var channel_count = input.length / 256;
@@ -38,10 +38,10 @@ function deinterleave(input, output) {
 }
 // Planar -> Interleaved audio buffer conversion
 //
-// Input is an array of `n` 128 frames Float32Array that hold the audio data.
+// `input` is an array of n*128 frames Float32Array that hold the audio data.
 // output is a Float32Array that is n*128 elements long. This function is useful
-// to get data from the Web Audio API (that does planar audio), into something
-// that codec or network streaming library expect.
+// to get data from the Web Audio API (that uses a planar format), into something
+// that a codec or network streaming library would expect.
 function interleave(input, output) {
   if (input.length * 128 != output.length) {
     throw "input and output of incompatible sizes";
@@ -107,7 +107,7 @@ class AudioReader {
 // (in an AudioWorkletProcessor). Write and Reader cannot change role after
 // setup, unless externally synchronized.
 //
-// GC can happen during the initial construction of this object when hopefully
+// GC _can_ happen during the initial construction of this object when hopefully
 // no audio is being output. This depends on the implementation.
 //
 // Parameter changes are like in the VST framework: an index and a float value
@@ -116,7 +116,7 @@ class AudioReader {
 // This class supports up to 256 parameters, but this is easy to extend if
 // needed.
 //
-// An element is a index, that is an unsigned byte, and a float32, which is 4
+// An element is an index, that is an unsigned byte, and a float32, which is 4
 // bytes.
 
 class ParameterWriter {
@@ -168,7 +168,7 @@ class ParameterReader {
 
 // A Single Producer - Single Consumer thread-safe wait-free ring buffer.
 //
-// The producer and the consumer can be separate thread, but cannot change role,
+// The producer and the consumer can be on separate threads, but cannot change roles,
 // except with external synchronization.
 
 class RingBuffer {
@@ -193,18 +193,18 @@ class RingBuffer {
     // -4 for the read ptr (uint32_t offsets)
     // capacity counts the empty slot to distinguish between full and empty.
     this._type = type;
-    this.capacity = (sab.byteLength - 8) / type.BYTES_PER_ELEMENT;
+    this._capacity = (sab.byteLength - 8) / type.BYTES_PER_ELEMENT;
     this.buf = sab;
     this.write_ptr = new Uint32Array(this.buf, 0, 1);
     this.read_ptr = new Uint32Array(this.buf, 4, 1);
-    this.storage = new type(this.buf, 8, this.capacity);
+    this.storage = new type(this.buf, 8, this._capacity);
   }
   // Returns the type of the underlying ArrayBuffer for this RingBuffer. This
   // allows implementing crude type checking.
   type() {
     return this._type.name;
   }
-  // Push bytes to the ring buffer. `bytes` is an typed array of the same type
+  // Push bytes to the ring buffer. `elements` is a typed array of the same type
   // as passed in the ctor, to be written to the queue.
   // Returns the number of elements written to the queue.
   push(elements) {
@@ -232,6 +232,42 @@ class RingBuffer {
 
     return to_write;
   }
+
+  // Write bytes to the ring buffer using callbacks. This create wrapper
+  // objects and can GC, so it's best to no use this variant from a real-time
+  // thread such as an AudioWorklerProcessor `process` method.
+  // The callback is passed two typed arrays of the same type, to be filled.
+  // This allows skipping copies if the API that produces the data writes is
+  // passed arrays to write to, such as `AudioData.copyTo`.
+  writeCallback(amount, cb) {
+    var rd = Atomics.load(this.read_ptr, 0);
+    var wr = Atomics.load(this.write_ptr, 0);
+
+    if ((wr + 1) % this._storage_capacity() == rd) {
+      // full
+      return 0;
+    }
+
+    let to_write = Math.min(this._available_write(rd, wr), amount);
+    let first_part = Math.min(this._storage_capacity() - wr, to_write);
+    let second_part = to_write - first_part;
+
+    // This part will cause GC: don't use in the real time thread.
+    var first_part_buf = new this._type(this.storage.buffer, 8 + wr * 4, first_part);
+    var second_part_buf = new this._type(this.storage.buffer, 8 + 0, second_part);
+
+    cb(first_part_buf, second_part_buf);
+
+    // publish the enqueued data to the other side
+    Atomics.store(
+      this.write_ptr,
+      0,
+      (wr + to_write) % this._storage_capacity()
+    );
+
+    return to_write;
+  }
+
   // Read `elements.length` elements from the ring buffer. `elements` is a typed
   // array of the same type as passed in the ctor.
   // Returns the number of elements read from the queue, they are placed at the
@@ -246,7 +282,7 @@ class RingBuffer {
 
     let to_read = Math.min(this._available_read(rd, wr), elements.length);
 
-    let first_part = Math.min(this._storage_capacity() - rd, elements.length);
+    let first_part = Math.min(this._storage_capacity() - rd, to_read);
     let second_part = to_read - first_part;
 
     this._copy(this.storage, rd, elements, 0, first_part);
@@ -267,18 +303,18 @@ class RingBuffer {
   }
 
   // True if the ring buffer is full, false otherwise. This can be late on the
-  // write side: it can return true when something has just been poped.
+  // write side: it can return true when something has just been popped.
   full() {
     var rd = Atomics.load(this.read_ptr, 0);
     var wr = Atomics.load(this.write_ptr, 0);
 
-    return (wr + 1) % this.capacity != rd;
+    return (wr + 1) % this._storage_capacity() == rd;
   }
 
   // The usable capacity for the ring buffer: the number of elements that can be
   // stored.
   capacity() {
-    return this.capacity - 1;
+    return this._capacity - 1;
   }
 
   // Number of elements available for reading. This can be late, and report less
@@ -291,7 +327,7 @@ class RingBuffer {
   }
 
   // Number of elements available for writing. This can be late, and report less
-  // elemtns that is actually available for writing, when something has just
+  // elements that is actually available for writing, when something has just
   // been dequeued.
   available_write() {
     var rd = Atomics.load(this.read_ptr, 0);
@@ -303,25 +339,18 @@ class RingBuffer {
 
   // Number of elements available for reading, given a read and write pointer..
   _available_read(rd, wr) {
-    if (wr > rd) {
-      return wr - rd;
-    } else {
-      return wr + this._storage_capacity() - rd;
-    }
+    return (wr + this._storage_capacity() - rd) % this._storage_capacity();
   }
 
   // Number of elements available from writing, given a read and write pointer.
   _available_write(rd, wr) {
-    let rv = rd - wr - 1;
-    if (wr >= rd) {
-      rv += this._storage_capacity();
-    }
-    return rv;
+    return this.capacity() - this._available_read(rd, wr);
   }
 
-  // The size of the storage for elements not accounting the space for the index.
+  // The size of the storage for elements not accounting the space for the
+  // index, counting the empty slot.
   _storage_capacity() {
-    return this.capacity;
+    return this._capacity;
   }
 
   // Copy `size` elements from `input`, starting at offset `offset_input`, to

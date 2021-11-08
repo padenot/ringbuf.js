@@ -13,7 +13,7 @@ var frequency = 440,
 
 URLFromFiles(['processor.js', 'index.js']).then((e) => {
     if (ctx.audioWorklet === undefined) {
-      log("No AudioWorklet. In Firefox, try going to about:config and flipping dom.audioworklet.enabled to true.")
+      log("No AudioWorklet.")
     } else {
       ctx.audioWorklet.addModule(e).then(() => {
         // 50ms of buffer, increase in case of glitches

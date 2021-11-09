@@ -64,6 +64,25 @@ allows running the build step and copying the file to allow the example to work.
 
 allows rebuilding the documentation.
 
+## Compatibility
+
+This needs the `SharedArrayBuffer`, so a couple of headers might need to be set
+on the web server serving the page.
+
+>  Cross-Origin-Opener-Policy: same-origin
+>  Cross-Origin-Embedder-Policy: require-corp
+
+As of 2021-11-09, the following browsers are compatible:
+
+- Firefox Desktop all current versions including current ESR
+- Firefox for Android all current versions
+- Chrome Desktop and (usually) Chromium-based browsers (for a long time)
+- Chrome for Android version 88 and later and browsers based on Chrome version
+    88 and later
+- Safari run in the following way:
+    `__XPC_JSC_useSharedArrayBuffer=1 open -a "Safari"`
+- Safari Tech Preview's current version
+
 ## License
 
 Mozilla Public License 2.0

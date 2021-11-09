@@ -45,7 +45,7 @@ to (from) a non-real-time thread is useful:
 
 ## Run locally
 
-> `cd example; node ../server.js`
+> `cd public; node ../server.js`
 
 This is a simple web server that sets the right headers to use
 `SharedArrayBuffer` (see [Planned changes to shared memory

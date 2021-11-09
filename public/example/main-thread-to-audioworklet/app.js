@@ -11,7 +11,7 @@ var frequency = 440,
     phase = 0.0,
     sine = new Float32Array(128);
 
-URLFromFiles(['processor.js', 'index.js']).then((e) => {
+URLFromFiles(['processor.js', '../index.js']).then((e) => {
     if (ctx.audioWorklet === undefined) {
       log("No AudioWorklet.")
     } else {
@@ -29,7 +29,7 @@ URLFromFiles(['processor.js', 'index.js']).then((e) => {
           processorOptions: {
             audioQueue: sab,
             paramQueue: sab2
-          }     
+          }
         });
         n.connect(ctx.destination);
 

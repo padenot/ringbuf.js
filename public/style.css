@@ -1,21 +1,25 @@
 html {
-  font-family: sans-serif;
+  font-family: "Helvetica Neue", sans-serif;
   padding: 3em;
-  background-color: #eee;
+  background-color: #fff;
+  font-size: 20px;
+  line-height: 1.5rem;
 }
 div {
-  max-width: 30em;
+  max-width: 40em;
   padding-top: 1em;
-  margin: 0 auto;
 }
 .wrap {
   display: flex;
-  align-items: center;
+  align-items: left;
   flex-direction: column;  /* make main axis vertical */
 }
 input,output {
   display: inline-block;
   vertical-align: middle;
+}
+h1 {
+  line-height: 1.3em;
 }
 h2 {
   margin-top: -0.5em;
@@ -38,4 +42,22 @@ span {
   text-align: left;
   width: 100%;
 }
+code {
+  letter-spacing: -1px;
+  background-color: #eee;
+  padding: 0.1em 0.2em;
+}
 
+a {
+  color: #333;
+  text-decoration: none;
+  border-bottom: 1px dotted gray;
+}
+
+a:visited {
+  color: #555;
+}
+
+a:hover {
+  color: #444;
+}

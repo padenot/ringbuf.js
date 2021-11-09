@@ -3,7 +3,7 @@
 <head>
 <meta charset=utf-8>
 <meta name="viewport" content="width=600,initial-scale=1">
-<link rel=stylesheet href=style.css>
+<link rel=stylesheet href=../../style.css>
 </head>
 <body>
 <a class=back href=index.html>Back to main</a>
@@ -29,12 +29,12 @@
 <script>
   var exports = {};
 </script>
-<script src=utils.js></script>
-<script src=index.js></script>
+<script src="../utils.js"></script>
+<script src="../index.js"></script>
 <script>
 
 async function setupWorker(sab, sampleRate) {
-  await URLFromFiles(['wav-writer.js', 'index.js']).then((e) => {
+  await URLFromFiles(['wav-writer.js', '../index.js']).then((e) => {
     worker = new Worker(e);
     worker.postMessage({command: "init", sab: sab, channelCount: 2, sampleRate:
         sampleRate});
@@ -80,7 +80,7 @@ function setupWebAudio(ac, sab) {
 
 var ac = new AudioContext;
 var osc = null;
-URLFromFiles(['recorder-worklet.js', 'index.js']).then((e) => {
+URLFromFiles(['recorder-worklet.js', '../index.js']).then((e) => {
   if (ac.audioWorklet === undefined) {
     log("No AudioWorklet");
   } else {
@@ -94,8 +94,13 @@ URLFromFiles(['recorder-worklet.js', 'index.js']).then((e) => {
           setupWorker(sab, ac.sampleRate);
           setupWebAudio(ac, sab);
 
+          mainThreadLoad = setInterval(function() {
+            var start = Date.now();
+            while (Date.now() - start < 90) { }
+          }, 100);
           startstop.innerText = "Stop";
         } else {
+          clearInterval(mainThreadLoad);
           worker.postMessage({"command": "stop"})
           ac.suspend();
           osc.stop(0);

@@ -22,5 +22,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "jaguarjs-jsdoc": "^1.1.0",
+    "jsdoc": "^3.6.7"
+  }
 }

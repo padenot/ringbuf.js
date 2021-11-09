@@ -66,11 +66,13 @@ allows rebuilding the documentation.
 
 ## Compatibility
 
-This needs the `SharedArrayBuffer`, so a couple of headers might need to be set
-on the web server serving the page.
+This needs the `SharedArrayBuffer`, so a couple of HTTP headers might need to be
+set on the web server serving the page.
 
->  Cross-Origin-Opener-Policy: same-origin
->  Cross-Origin-Embedder-Policy: require-corp
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
 
 As of 2021-11-09, the following browsers are compatible:
 

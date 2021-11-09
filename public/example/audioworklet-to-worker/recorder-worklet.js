@@ -1,16 +1,12 @@
 var exports = {};
 
 class RecorderWorklet extends AudioWorkletProcessor {
-  static get parameterDescriptors() {
-    return [];
-  }
-
   constructor(options) {
     super();
+    // Staging buffer to interleave the audio data.
     this.interleaved = new Float32Array(128 * 2); // stereo
     var sab = options.processorOptions;
     this._audio_writer = new AudioWriter(new RingBuffer(sab, Float32Array));
-    console.log(this._audio_writer);
   }
 
   process(inputs, outputs, parameters) {
@@ -21,7 +17,6 @@ class RecorderWorklet extends AudioWorkletProcessor {
         console.log("underrun: the worker doesn't dequeue fast enough!");
       }
     }
-
     return true;
   }
 }

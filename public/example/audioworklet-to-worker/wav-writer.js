@@ -1,7 +1,8 @@
 let exports = {};
 
+// Read some float32 pcm from the queue, convert to int16 pcm, and push it to
+// our global queue.
 function readFromQueue() {
-  // read some float32 pcm, convert to to int16 pcm;
   var samples_read = this._audio_reader.dequeue(this.staging);
   if (!samples_read) {
     return 0;
@@ -10,23 +11,32 @@ function readFromQueue() {
   for (var i = 0; i < samples_read; i++) {
     segment[i] = Math.min(Math.max(this.staging[i], -1.0), 1.0) * (2 << 14);
   }
-  this.pcm.push(segment);
+  pcm.push(segment);
 }
 
 onmessage = function(e) {
   switch(e.data.command) {
     case "init" : {
-      this._audio_reader = new exports.AudioReader(new RingBuffer(e.data.sab, Float32Array));
+      this._audio_reader =
+        new exports.AudioReader(new RingBuffer(e.data.sab, Float32Array));
+      // The number of channels of the audio stream read from the queue.
       this.channelCount = e.data.channelCount;
+      // The sample-rate of the audio stream read from the queue.
       this.sampleRate = e.data.sampleRate;
 
+      // Store the audio data, segment by segments, as array of int16 samples.
       this.pcm = [];
       // A smaller staging array to copy the audio samples from, before conversion
-      // to uint16.
+      // to uint16. It's size is 4 times less than the 1 second worth of data
+      // that the ring buffer can hold, so it's 250ms, allowing to not make
+      // deadlines:
+      // staging buffer size = ring buffer size / sizeof(float32) / stereo / 4
       this.staging = new Float32Array(e.data.sab.byteLength / 4 / 4 / 2);
-      interval = setInterval(readFromQueue, 100); // attempt to dequeue every 100ms
-    }
+      // Attempt to dequeue every 100ms. Making this deadline isn't critical:
+      // there's 1 second worth of space in the queue, and we'll be dequeing 
+      interval = setInterval(readFromQueue, 100);
       break;
+    }
     case "stop" : {
       clearInterval(interval);
       // Drain the ring buffer
@@ -78,4 +88,3 @@ onmessage = function(e) {
     }
   }
 }
-

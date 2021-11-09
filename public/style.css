@@ -9,11 +9,6 @@ div {
   max-width: 40em;
   padding-top: 1em;
 }
-.wrap {
-  display: flex;
-  align-items: left;
-  flex-direction: column;  /* make main axis vertical */
-}
 input,output {
   display: inline-block;
   vertical-align: middle;

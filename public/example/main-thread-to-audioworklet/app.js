@@ -11,9 +11,9 @@ var frequency = 440,
     phase = 0.0,
     sine = new Float32Array(128);
 
-URLFromFiles(['processor.js', 'index.js']).then((e) => {
+URLFromFiles(['processor.js', '../index.js']).then((e) => {
     if (ctx.audioWorklet === undefined) {
-      log("No AudioWorklet. In Firefox, try going to about:config and flipping dom.audioworklet.enabled to true.")
+      log("No AudioWorklet.")
     } else {
       ctx.audioWorklet.addModule(e).then(() => {
         // 50ms of buffer, increase in case of glitches
@@ -29,7 +29,7 @@ URLFromFiles(['processor.js', 'index.js']).then((e) => {
           processorOptions: {
             audioQueue: sab,
             paramQueue: sab2
-          }     
+          }
         });
         n.connect(ctx.destination);
 

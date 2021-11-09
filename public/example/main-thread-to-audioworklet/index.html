@@ -2,49 +2,13 @@
 <meta charset=utf-8>
 <html>
 <head>
-<style>
-html {
-  font-family: sans-serif;
-  padding: 3em;
-  background-color: #eee;
-}
-div {
-  max-width: 30em;
-  padding-top: 1em;
-  margin: 0 auto;
-}
-.wrap {
-  display: flex;
-  align-items: center;
-  flex-direction: column;  /* make main axis vertical */
-}
-input,output {
-  display: inline-block;
-  vertical-align: middle;
-}
-h2 {
-  margin-top: -0.5em;
-  font-weight: 400;
-}
-#log {
-  font-family: monospace;
-  color: #a00;
-}
-a {
-  color: #668;
-}
-a:visited {
-  color: #66a;
-}
-span {
-  width: 10em;
-}
-</style>
+<link rel=stylesheet href=../../style.css>
 <meta name="viewport" content="width=600,initial-scale=1">
 </head>
 <body>
 <div class=wrap>
-  <h1>ringbuf.js demo page</h1>
+  <a class=back href=index.html>Back to main</a>
+  <h1>Streaming audio and parameter changes to an <code>AudioWorkletProcessor</code></h1>
   <div>
     Source code and library available at:
     <ul>
@@ -84,8 +48,8 @@ span {
 <script>
 exports = {};
 </script>
-<script src="utils.js"></script>
-<script src="index.js"></script>
+<script src="../utils.js"></script>
+<script src="../index.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

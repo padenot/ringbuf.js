@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=600,initial-scale=1">
+<link rel=stylesheet href=../../style.css>
+</head>
+<body>
+<a class=back href=index.html>Back to main</a>
+<h1>
+  Sending the output of an <code>AudioWorkletProcessor</code> to a Worker
+</h1>
+<p>
+  An <code>AudioWorkletProcessor</code> generates or receives audio data. It
+  writes to a ring buffer. The consumer of the ring buffer is running in a Web
+  Worker, and this Worker buffers the input audio data. 
+</p>
+<p>
+  After playing a bit of audio and stopping, a wav file of the recording can be
+  downloaded.
+</p>
+<p>
+  While this is running, this page artificially loads the main thread to
+  simulate an heavy Web app front-end.
+</p>
+<p>
+  <button disabled id=startstop>Start</button>
+</p>
+<script>
+  var exports = {};
+</script>
+<script src="../utils.js"></script>
+<script src="../index.js"></script>
+<script>
+
+async function setupWorker(sab, sampleRate) {
+  await URLFromFiles(['wav-writer.js', '../index.js']).then((e) => {
+    worker = new Worker(e);
+    worker.postMessage({command: "init", sab: sab, channelCount: 2, sampleRate:
+        sampleRate});
+    // The only message that the worker sends to the main thread is the final
+    // WAV file: we can simply offer to download it.
+    worker.onmessage = function(e) {
+      var link = document.createElement( 'a' );
+      link.style.display = 'none';
+      document.body.appendChild( link );
+
+      const blob = new Blob([e.data], {type: 'audio/wav'});	
+      const objectURL = URL.createObjectURL(blob);
+
+      link.href = objectURL;
+      link.href = URL.createObjectURL( blob );
+      link.download =  `audio-${(new Date()).toISOString().replace(/[^0-9]/g, "")}.wav`;
+      link.click();
+    }
+  });
+};
+
+function setupWebAudio(ac, sab) {
+  ac.resume();
+  osc = new OscillatorNode(ac);
+  var fm = new OscillatorNode(ac);
+  var gain = new GainNode(ac);
+  var panner = new StereoPannerNode(ac);
+  var panModulation = new OscillatorNode(ac);
+  var recorderWorklet = new AudioWorkletNode(ac, "recorder-worklet",
+      {processorOptions: sab});
+  panModulation.frequency.value = 2.0;
+  fm.frequency.value = 1.0;
+  gain.gain.value = 110;
+  // panner
+  panModulation.connect(panner.pan);
+  fm.connect(gain).connect(osc.frequency);
+  osc.connect(panner).connect(ac.destination);
+  panner.connect(recorderWorklet);
+  osc.start(0);
+  fm.start(0);
+  panModulation.start(0);
+}
+
+var ac = new AudioContext;
+var osc = null;
+URLFromFiles(['recorder-worklet.js', '../index.js']).then((e) => {
+  if (ac.audioWorklet === undefined) {
+    log("No AudioWorklet");
+  } else {
+    ac.audioWorklet.addModule(e).then(() => {
+      startstop.disabled = false;
+      startstop.onclick = function() {
+        if (startstop.innerText == "Start") {
+          // One second of stereo Float32 PCM.
+          var sab = RingBuffer.getStorageForCapacity(ac.sampleRate * 2, Float32Array);
+
+          setupWorker(sab, ac.sampleRate);
+          setupWebAudio(ac, sab);
+
+          mainThreadLoad = setInterval(function() {
+            var start = Date.now();
+            while (Date.now() - start < 90) { }
+          }, 100);
+          startstop.innerText = "Stop";
+        } else {
+          clearInterval(mainThreadLoad);
+          worker.postMessage({"command": "stop"})
+          ac.suspend();
+          osc.stop(0);
+          osc.disconnect();
+          osc = null;
+          startstop.innerText = "Start";
+        }
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>

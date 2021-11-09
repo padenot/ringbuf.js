@@ -1,0 +1,63 @@
+html {
+  font-family: "Helvetica Neue", sans-serif;
+  padding: 3em;
+  background-color: #fff;
+  font-size: 20px;
+  line-height: 1.5rem;
+}
+div {
+  max-width: 40em;
+  padding-top: 1em;
+}
+.wrap {
+  display: flex;
+  align-items: left;
+  flex-direction: column;  /* make main axis vertical */
+}
+input,output {
+  display: inline-block;
+  vertical-align: middle;
+}
+h1 {
+  line-height: 1.3em;
+}
+h2 {
+  margin-top: -0.5em;
+  font-weight: 400;
+}
+#log {
+  font-family: monospace;
+  color: #a00;
+}
+a {
+  color: #668;
+}
+a:visited {
+  color: #66a;
+}
+span {
+  width: 10em;
+}
+.back {
+  text-align: left;
+  width: 100%;
+}
+code {
+  letter-spacing: -1px;
+  background-color: #eee;
+  padding: 0.1em 0.2em;
+}
+
+a {
+  color: #333;
+  text-decoration: none;
+  border-bottom: 1px dotted gray;
+}
+
+a:visited {
+  color: #555;
+}
+
+a:hover {
+  color: #444;
+}

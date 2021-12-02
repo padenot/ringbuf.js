@@ -17,6 +17,12 @@ export default {
             format: 'es',
             exports: 'named',
             sourcemap: true
+        },
+        {
+            file: pkg.modulemjs,
+            format: 'es',
+            exports: 'named',
+            sourcemap: true,
         }
     ],
     plugins: [

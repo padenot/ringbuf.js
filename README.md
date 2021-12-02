@@ -1,7 +1,7 @@
 # `ringbuf.js`
 
 [![test](https://github.com/padenot/ringbuf.js/actions/workflows/test.yml/badge.svg)](https://github.com/padenot/ringbuf.js/actions/workflows/test.yml)
-![netlify](https://img.shields.io/netlify/9d1a4afc-3423-4479-83e5-2aee90af3ae7)
+![netlify](https://img.shields.io/netlify/9d1a4afc-3423-4479-83e5-2aee90af3ae7?style=plastic)
 [![npm](https://img.shields.io/npm/v/ringbuf.js)](https://www.npmjs.com/package/ringbuf.js)
 
 

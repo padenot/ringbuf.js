@@ -14,7 +14,7 @@
     "npm": ">=5"
   },
   "scripts": {
-    "build": "rollup -c && cp dist/index.js example"
+    "build": "rollup -c && cp dist/index.js public/example/"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",

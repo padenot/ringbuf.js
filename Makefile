@@ -5,3 +5,6 @@ doc: js/audioqueue.js js/index.js js/param.js js/param.js
 
 build:
 	npm run-script build
+
+check:
+	node tests/test.mjs

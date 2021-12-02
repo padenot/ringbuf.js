@@ -58,9 +58,11 @@ export class RingBuffer {
   /**
    * Push elements to the ring buffer.
    * @param {TypedArray} elements A typed array of the same type as passed in the ctor, to be written to the queue.
+   * @param {Number} length If passed, the maximum number of elements to push.
+   * If not passed, all elements in the input array are pushed.
    * @return the number of elements written to the queue.
    */
-  push(elements) {
+  push(elements, length) {
     var rd = Atomics.load(this.read_ptr, 0);
     var wr = Atomics.load(this.write_ptr, 0);
 
@@ -69,7 +71,9 @@ export class RingBuffer {
       return 0;
     }
 
-    let to_write = Math.min(this._available_write(rd, wr), elements.length);
+    var len = length != undefined ? length : elements.length;
+
+    let to_write = Math.min(this._available_write(rd, wr), len);
     let first_part = Math.min(this._storage_capacity() - wr, to_write);
     let second_part = to_write - first_part;
 
@@ -139,9 +143,11 @@ export class RingBuffer {
    * beginning of the array passed as parameter.
    * @param {TypedArray} elements An array in which the elements read from the
    * queue will be written, starting at the beginning of the array.
+   * @param {Number} length If passed, the maximum number of elements to pop. If
+   * not passed, up to elements.length are popped.
    * @return The number of elements read from the queue.
    */
-  pop(elements) {
+  pop(elements, length) {
     var rd = Atomics.load(this.read_ptr, 0);
     var wr = Atomics.load(this.write_ptr, 0);
 
@@ -149,7 +155,9 @@ export class RingBuffer {
       return 0;
     }
 
-    let to_read = Math.min(this._available_read(rd, wr), elements.length);
+    var len = length != undefined ? length : elements.length;
+
+    let to_read = Math.min(this._available_read(rd, wr), len);
 
     let first_part = Math.min(this._storage_capacity() - rd, to_read);
     let second_part = to_read - first_part;

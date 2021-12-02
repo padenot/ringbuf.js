@@ -1,5 +1,7 @@
 # `ringbuf.js`
 
+[![test](https://github.com/padenot/ringbuf.js/actions/workflows/test.yml/badge.svg)](https://github.com/padenot/ringbuf.js/actions/workflows/test.yml)
+
 A thread-safe wait-free single-consumer single-producer ring buffer for the web,
 and some utilities.
 

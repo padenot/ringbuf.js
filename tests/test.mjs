@@ -152,6 +152,7 @@ test('SPSC asymmetrical random push/pop', async () => {
     });
   })
   await p;
+  worker.terminate();
 });
 
 test.run();

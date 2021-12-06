@@ -108,4 +108,50 @@ test('linearized asymmetrical random push/pop', () => {
   }
 });
 
+function oneIteration(iteration, iterationsTotal, rng, worker) {
+  return new Promise((resolve, reject) => {
+    worker.once("message", (e) => { done = true; });
+    var arraySize = rng.randomInt(48000);
+    var pushPopSize = Math.round(rng.random() * arraySize);
+    var sab = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
+    var rb = new RingBuffer(sab, Uint32Array);
+    console.info(`Starting iteration ${iterationsTotal - iteration + 1} of ${iterationsTotal}, SAB size: ${arraySize}, push/pop size: ${pushPopSize}`);
+    var storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
+    worker.postMessage({ name: "seq-constant", sharedArrayBuffer: sab, params: [pushPopSize] });
+    var toPop = new Uint32Array(pushPopSize);
+    var verifier = new SequenceVerifier;
+    var done = false;
+    function tryPop() {
+      while (rb.available_read() >= pushPopSize) {
+        rb.pop(toPop);
+        verifier.check(toPop);
+      }
+      if (!done) {
+        setTimeout(tryPop.bind(this), 0);
+      } else {
+        resolve();
+      }
+    }
+    tryPop();
+  });
+}
+
+test('SPSC asymmetrical random push/pop', async () => {
+  var worker = new Worker("./tests/worker.js");
+  var p = new Promise((resolve, reject) => {
+    worker.once("message", async (e) => {
+      if (e == "ok") {
+        var iterationsTotal = 100;
+        var iteration = iterationsTotal;
+        var rng = new SeededPRNG(13);
+        while (iteration) {
+          await oneIteration(iteration--, iterationsTotal, rng, worker);
+        }
+        resolve();
+      }
+    });
+  })
+  await p;
+});
+
 test.run();

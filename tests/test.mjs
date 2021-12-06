@@ -2,72 +2,17 @@
 import { test } from 'uvu';
 import * as assert from 'uvu/assert';
 import { RingBuffer } from '../dist/index.mjs';
-
-/* seedable good enough prng */
-function mulberry32(a) {
-    return function() {
-      var t = a += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-}
-
-/* seeded good enough prng */
-var seededPRNG = mulberry32(11 /* 11 sounds good */)
-
-/* seedable good enough prng between 0 and max */
-var seededIntegerPRNG = function(max) {
-  return Math.round(seededPRNG() * max);
-}
-
-// Generates a sequence of integers
-class SequenceGenerator {
-  constructor() {
-    this.index = 0;
-  }
-  next() {
-    return this.index++;
-  }
-  fill(array, elementCount) {
-    var len = elementCount != undefined ? elementCount : array.length;
-    for (var i = 0; i < len; i++) {
-      array[i] = this.next();
-    }
-  }
-  reset() {
-    this.index = 0;
-  }
-}
-
-// Checks that a series of integers is a sequence
-class SequenceVerifier {
-  constructor() {
-    this.index = 0;
-  }
-  check(toCheck, elementCount) {
-    if (typeof toCheck == Number) {
-      assert.equal(this.index, toCheck);
-      this.index++;
-    } else if (toCheck.length != undefined) {
-      var len = elementCount != undefined ? elementCount : toCheck.length;
-      for (var i = 0; i < len; i++) {
-        assert.equal(this.index, toCheck[i]);
-        this.index++;
-      }
-    }
-  }
-  reset() {
-    index = 0;
-  }
-}
+import { Worker } from 'worker_threads';
+import fs from 'fs';
+import { SequenceGenerator, SequenceVerifier, SeededPRNG } from './test-utils.mjs'
 
 test('linearized symmetrical push/pop', () => {
   var iterationsTotal = 1000;
   var iteration = iterationsTotal;
+  var rng = new SeededPRNG();
   while (iteration--) {
-    var arraySize = seededIntegerPRNG(48000);
-    var pushPopSize = Math.round(seededPRNG() * arraySize);
+    var arraySize = rng.randomInt(48000);
+    var pushPopSize = Math.round(rng.random() * arraySize);
     console.info(`Starting iteration ${iterationsTotal - iteration} of ${iterationsTotal}, SAB size: ${arraySize}, push/pop size: ${pushPopSize}`);
     var storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
     var rb = new RingBuffer(storage, Uint32Array);
@@ -93,10 +38,11 @@ test('linearized symmetrical push/pop', () => {
 test('linarized asymmetrical push/pop', () => {
   var iterationsTotal = 1000;
   var iteration = iterationsTotal;
+  var rng = new SeededPRNG();
   while (iteration--) {
-    var arraySize = seededIntegerPRNG(48000);
-    var pushSize = Math.round(seededPRNG() * arraySize);
-    var popSize = Math.round(seededPRNG() * arraySize);
+    var arraySize = rng.randomInt(48000);
+    var pushSize = Math.round(rng.random() * arraySize);
+    var popSize = Math.round(rng.random() * arraySize);
     console.info(`Starting iteration ${iterationsTotal - iteration} of ${iterationsTotal}, SAB size: ${arraySize}, push size: ${pushSize}, pop size: ${popSize}`);
     var storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
     var rb = new RingBuffer(storage, Uint32Array);
@@ -127,10 +73,11 @@ test('linarized asymmetrical push/pop', () => {
 test('linearized asymmetrical random push/pop', () => {
   var iterationsTotal = 1000;
   var iteration = iterationsTotal;
+  var rng = new SeededPRNG();
   while (iteration--) {
-    var arraySize = seededIntegerPRNG(48000);
-    var maxPushSize = Math.round(seededPRNG() * arraySize);
-    var maxPopSize = Math.round(seededPRNG() * arraySize);
+    var arraySize = rng.randomInt(48000);
+    var maxPushSize = Math.round(rng.random() * arraySize);
+    var maxPopSize = Math.round(rng.random() * arraySize);
     console.info(`Starting iteration ${iterationsTotal - iteration} of ${iterationsTotal}, SAB size: ${arraySize}, max push size: ${maxPushSize}, max pop size: ${maxPopSize}`);
     var storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
     var rb = new RingBuffer(storage, Uint32Array);
@@ -144,14 +91,14 @@ test('linearized asymmetrical random push/pop', () => {
     var external_length = 0;
       while (step--) {
       var max_to_write = Math.min(rb.available_write(), toPush.length);
-      var to_write = seededIntegerPRNG(max_to_write);
+      var to_write = rng.randomInt(max_to_write);
 
       generator.fill(toPush, to_write);
       external_length += to_write;
       rb.push(toPush, to_write);
       assert.equal(rb.available_read(), external_length);
       assert.equal(rb.available_write(), rb.capacity() - external_length);
-      var to_pop = seededIntegerPRNG(maxPopSize);
+      var to_pop = rng.randomInt(maxPopSize);
       var popped = rb.pop(toPop, to_pop);
       external_length -= popped
       assert.equal(rb.available_read(), external_length);

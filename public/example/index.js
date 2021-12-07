@@ -14,14 +14,14 @@ Object.defineProperty(exports, '__esModule', { value: true });
  * @param {Float32Array} output is an array of 128-frames arrays.
  */
 function deinterleave(input, output) {
-  var channel_count = input.length / 256;
-  if (output.length != channel_count) {
-    throw "not enough space in output arrays";
+  const channel_count = input.length / 256;
+  if (output.length !== channel_count) {
+    throw RangeError("not enough space in output arrays");
   }
-  for (var i = 0; i < channelCount; i++) {
-    let out_channel = output[i];
+  for (let i = 0; i < channel_count; i++) {
+    const out_channel = output[i];
     let interleaved_idx = i;
-    for (var j = 0; j < 128; ++j) {
+    for (let j = 0; j < 128; ++j) {
       out_channel[j] = input[interleaved_idx];
       interleaved_idx += channel_count;
     }
@@ -39,12 +39,12 @@ function deinterleave(input, output) {
  * @param {Float32Array} output A Float32Array that is n*128 elements long.
  */
 function interleave(input, output) {
-  if (input.length * 128 != output.length) {
-    throw "input and output of incompatible sizes";
+  if (input.length * 128 !== output.length) {
+    throw RangeError("input and output of incompatible sizes");
   }
-  var out_idx = 0;
-  for (var i = 0; i < 128; i++) {
-    for (var channel = 0; channel < input.length; channel++) {
+  let out_idx = 0;
+  for (let i = 0; i < 128; i++) {
+    for (let channel = 0; channel < input.length; channel++) {
       output[out_idx] = input[channel][i];
       out_idx++;
     }
@@ -70,8 +70,8 @@ class AudioWriter {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Float32Array") {
-      throw "This class requires a ring buffer of Float32Array";
+    if (ringbuf.type() !== "Float32Array") {
+      throw TypeError("This class requires a ring buffer of Float32Array");
     }
     this.ringbuf = ringbuf;
   }
@@ -115,8 +115,8 @@ class AudioReader {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Float32Array") {
-      throw "This class requires a ring buffer of Float32Array";
+    if (ringbuf.type() !== "Float32Array") {
+      throw TypeError("This class requires a ring buffer of Float32Array");
     }
     this.ringbuf = ringbuf;
   }
@@ -139,7 +139,7 @@ class AudioReader {
     return this.ringbuf.pop(buf);
   }
   /**
-   * Query the occupied space in the queue. 
+   * Query the occupied space in the queue.
    *
    * @return The amount of samples that can be read with a guarantee of success.
    *
@@ -175,8 +175,8 @@ class ParameterWriter {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Uint8Array") {
-      throw "This class requires a ring buffer of Uint8Array";
+    if (ringbuf.type() !== "Uint8Array") {
+      throw TypeError("This class requires a ring buffer of Uint8Array");
     }
     const SIZE_ELEMENT = 5;
     this.ringbuf = ringbuf;
@@ -199,7 +199,7 @@ class ParameterWriter {
     if (this.ringbuf.available_write() < SIZE_ELEMENT) {
       return false;
     }
-    return this.ringbuf.push(this.array) == SIZE_ELEMENT;
+    return this.ringbuf.push(this.array) === SIZE_ELEMENT;
   }
 }
 
@@ -225,7 +225,7 @@ class ParameterReader {
   /**
    * @constructor
    * @param {RingBuffer} ringbuf A RingBuffer setup to hold Uint8.
-  */
+   */
   constructor(ringbuf) {
     const SIZE_ELEMENT = 5;
     this.ringbuf = ringbuf;
@@ -242,11 +242,11 @@ class ParameterReader {
     if (this.ringbuf.empty()) {
       return false;
     }
-    var rv = this.ringbuf.pop(this.array);
+    const rv = this.ringbuf.pop(this.array);
     o.index = this.view.getUint8(0);
     o.value = this.view.getFloat32(1);
 
-    return true;
+    return rv === 2;
   }
 }
 
@@ -269,9 +269,9 @@ class RingBuffer {
    */
   static getStorageForCapacity(capacity, type) {
     if (!type.BYTES_PER_ELEMENT) {
-      throw "Pass in a ArrayBuffer subclass";
+      throw TypeError("Pass in a ArrayBuffer subclass");
     }
-    var bytes = 8 + (capacity + 1) * type.BYTES_PER_ELEMENT;
+    const bytes = 8 + (capacity + 1) * type.BYTES_PER_ELEMENT;
     return new SharedArrayBuffer(bytes);
   }
   /**
@@ -282,9 +282,8 @@ class RingBuffer {
    * buffer will hold.
    */
   constructor(sab, type) {
-    if (!ArrayBuffer.__proto__.isPrototypeOf(type) &&
-      type.BYTES_PER_ELEMENT !== undefined) {
-      throw "Pass a concrete typed array class as second argument";
+    if (type.BYTES_PER_ELEMENT === undefined) {
+      throw TypeError("Pass a concrete typed array class as second argument");
     }
 
     // Maximum usable size is 1<<32 - type.BYTES_PER_ELEMENT bytes in the ring
@@ -315,19 +314,19 @@ class RingBuffer {
    * @return the number of elements written to the queue.
    */
   push(elements, length) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    if ((wr + 1) % this._storage_capacity() == rd) {
+    if ((wr + 1) % this._storage_capacity() === rd) {
       // full
       return 0;
     }
 
-    var len = length != undefined ? length : elements.length;
+    const len = length !== undefined ? length : elements.length;
 
-    let to_write = Math.min(this._available_write(rd, wr), len);
-    let first_part = Math.min(this._storage_capacity() - wr, to_write);
-    let second_part = to_write - first_part;
+    const to_write = Math.min(this._available_write(rd, wr), len);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
 
     this._copy(elements, 0, this.storage, wr, first_part);
     this._copy(elements, first_part, this.storage, 0, second_part);
@@ -351,30 +350,38 @@ class RingBuffer {
    * passed arrays to write to, such as `AudioData.copyTo`.
    * @param {number} amount The maximum number of elements to write to the ring
    * buffer. If amount is more than the number of slots available for writing,
-    * then the number of slots available for writing will be made available: no
-    * overwriting of elements can happen.
-    * @param {Function} cb A callback with two parameters, that are two typed
-    * array of the correct type, in which the data need to be copied. It is
-    * necessary to write exactly the number of elements determined by the size
-    * of the two typed arrays.
-    * @return The number of elements written to the queue.
+   * then the number of slots available for writing will be made available: no
+   * overwriting of elements can happen.
+   * @param {Function} cb A callback with two parameters, that are two typed
+   * array of the correct type, in which the data need to be copied. It is
+   * necessary to write exactly the number of elements determined by the size
+   * of the two typed arrays.
+   * @return The number of elements written to the queue.
    */
   writeCallback(amount, cb) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    if ((wr + 1) % this._storage_capacity() == rd) {
+    if ((wr + 1) % this._storage_capacity() === rd) {
       // full
       return 0;
     }
 
-    let to_write = Math.min(this._available_write(rd, wr), amount);
-    let first_part = Math.min(this._storage_capacity() - wr, to_write);
-    let second_part = to_write - first_part;
+    const to_write = Math.min(this._available_write(rd, wr), amount);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
 
     // This part will cause GC: don't use in the real time thread.
-    var first_part_buf = new this._type(this.storage.buffer, 8 + wr * 4, first_part);
-    var second_part_buf = new this._type(this.storage.buffer, 8 + 0, second_part);
+    const first_part_buf = new this._type(
+      this.storage.buffer,
+      8 + wr * 4,
+      first_part
+    );
+    const second_part_buf = new this._type(
+      this.storage.buffer,
+      8 + 0,
+      second_part
+    );
 
     cb(first_part_buf, second_part_buf);
 
@@ -400,19 +407,19 @@ class RingBuffer {
    * @return The number of elements read from the queue.
    */
   pop(elements, length) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    if (wr == rd) {
+    if (wr === rd) {
       return 0;
     }
 
-    var len = length != undefined ? length : elements.length;
+    const len = length !== undefined ? length : elements.length;
 
-    let to_read = Math.min(this._available_read(rd, wr), len);
+    const to_read = Math.min(this._available_read(rd, wr), len);
 
-    let first_part = Math.min(this._storage_capacity() - rd, to_read);
-    let second_part = to_read - first_part;
+    const first_part = Math.min(this._storage_capacity() - rd, to_read);
+    const second_part = to_read - first_part;
 
     this._copy(this.storage, rd, elements, 0, first_part);
     this._copy(this.storage, 0, elements, first_part, second_part);
@@ -428,10 +435,10 @@ class RingBuffer {
    * pushed.
    */
   empty() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    return wr == rd;
+    return wr === rd;
   }
 
   /**
@@ -439,10 +446,10 @@ class RingBuffer {
    * on the write side: it can return true when something has just been popped.
    */
   full() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    return (wr + 1) % this._storage_capacity() == rd;
+    return (wr + 1) % this._storage_capacity() === rd;
   }
 
   /**
@@ -459,8 +466,8 @@ class RingBuffer {
    * been enqueued.
    */
   available_read() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
     return this._available_read(rd, wr);
   }
 
@@ -470,8 +477,8 @@ class RingBuffer {
    * has just been dequeued.
    */
   available_write() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
     return this._available_write(rd, wr);
   }
 
@@ -515,7 +522,7 @@ class RingBuffer {
    * @private
    */
   _copy(input, offset_input, output, offset_output, size) {
-    for (var i = 0; i < size; i++) {
+    for (let i = 0; i < size; i++) {
       output[offset_output + i] = input[offset_input + i];
     }
   }

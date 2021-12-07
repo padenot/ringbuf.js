@@ -125,6 +125,7 @@ test("linearized asymmetrical random push/pop", () => {
 
 function oneIteration(iteration, iterationsTotal, rng, worker) {
   return new Promise((resolve, _reject) => {
+    let done = false;
     worker.once("message", (_e) => {
       done = true;
     });

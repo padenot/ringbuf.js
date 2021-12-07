@@ -33,7 +33,7 @@ class SequenceGenerator {
     return this.index++;
   }
   fill(array, elementCount) {
-    const len = elementCount != undefined ? elementCount : array.length;
+    const len = elementCount !== undefined ? elementCount : array.length;
     for (let i = 0; i < len; i++) {
       array[i] = this.next();
     }
@@ -52,8 +52,8 @@ class SequenceVerifier {
     if (typeof toCheck === Number) {
       assert.equal(this.index, toCheck);
       this.index++;
-    } else if (toCheck.length != undefined) {
-      const len = elementCount != undefined ? elementCount : toCheck.length;
+    } else if (toCheck.length !== undefined) {
+      const len = elementCount !== undefined ? elementCount : toCheck.length;
       for (let i = 0; i < len; i++) {
         assert.equal(this.index, toCheck[i]);
         this.index++;
@@ -61,7 +61,7 @@ class SequenceVerifier {
     }
   }
   reset() {
-    index = 0;
+    this.index = 0;
   }
 }
 

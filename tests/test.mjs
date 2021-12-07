@@ -3,7 +3,6 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { RingBuffer } from "../dist/index.mjs";
 import { Worker } from "worker_threads";
-import fs from "fs";
 import {
   SequenceGenerator,
   SequenceVerifier,
@@ -32,7 +31,7 @@ test("linearized symmetrical push/pop", () => {
     let step = Math.round((arraySize * 100) / pushPopSize);
     while (step--) {
       generator.fill(toPush);
-      const pushed = rb.push(toPush);
+      rb.push(toPush);
       assert.equal(rb.available_read(), toPush.length);
       assert.equal(rb.available_write(), rb.capacity() - toPush.length);
       rb.pop(toPop);
@@ -125,8 +124,8 @@ test("linearized asymmetrical random push/pop", () => {
 });
 
 function oneIteration(iteration, iterationsTotal, rng, worker) {
-  return new Promise((resolve, reject) => {
-    worker.once("message", (e) => {
+  return new Promise((resolve, _reject) => {
+    worker.once("message", (_e) => {
       done = true;
     });
     const arraySize = rng.randomInt(48000);
@@ -138,7 +137,6 @@ function oneIteration(iteration, iterationsTotal, rng, worker) {
         iterationsTotal - iteration + 1
       } of ${iterationsTotal}, SAB size: ${arraySize}, push/pop size: ${pushPopSize}`
     );
-    const storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
     worker.postMessage({
       name: "seq-constant",
       sharedArrayBuffer: sab,
@@ -146,7 +144,6 @@ function oneIteration(iteration, iterationsTotal, rng, worker) {
     });
     const toPop = new Uint32Array(pushPopSize);
     const verifier = new SequenceVerifier();
-    var done = false;
     function tryPop() {
       while (rb.available_read() >= pushPopSize) {
         rb.pop(toPop);
@@ -164,9 +161,9 @@ function oneIteration(iteration, iterationsTotal, rng, worker) {
 
 test("SPSC asymmetrical random push/pop", async () => {
   const worker = new Worker("./tests/worker.js");
-  const p = new Promise((resolve, reject) => {
+  const p = new Promise((resolve, _reject) => {
     worker.once("message", async (e) => {
-      if (e == "ok") {
+      if (e === "ok") {
         const iterationsTotal = 100;
         let iteration = iterationsTotal;
         const rng = new SeededPRNG(13);

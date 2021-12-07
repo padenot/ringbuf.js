@@ -1,6 +1,7 @@
 module.exports = {
   env: {
-    es6: true,
+    browser: true,
+    es2021: true,
     node: true
   },
   extends: [
@@ -10,7 +11,7 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   parserOptions: {
-    ecmaVersion: '2017',
+    ecmaVersion: 'latest',
     ecmaFeatures: {
       experimentalObjectRestSpread: true,
     },

@@ -10,14 +10,14 @@
  * @param {Float32Array} output is an array of 128-frames arrays.
  */
 export function deinterleave(input, output) {
-  var channel_count = input.length / 256;
+  const channel_count = input.length / 256;
   if (output.length != channel_count) {
     throw "not enough space in output arrays";
   }
-  for (var i = 0; i < channelCount; i++) {
-    let out_channel = output[i];
+  for (let i = 0; i < channelCount; i++) {
+    const out_channel = output[i];
     let interleaved_idx = i;
-    for (var j = 0; j < 128; ++j) {
+    for (let j = 0; j < 128; ++j) {
       out_channel[j] = input[interleaved_idx];
       interleaved_idx += channel_count;
     }
@@ -38,9 +38,9 @@ export function interleave(input, output) {
   if (input.length * 128 != output.length) {
     throw "input and output of incompatible sizes";
   }
-  var out_idx = 0;
-  for (var i = 0; i < 128; i++) {
-    for (var channel = 0; channel < input.length; channel++) {
+  let out_idx = 0;
+  for (let i = 0; i < 128; i++) {
+    for (let channel = 0; channel < input.length; channel++) {
       output[out_idx] = input[channel][i];
       out_idx++;
     }
@@ -135,7 +135,7 @@ export class AudioReader {
     return this.ringbuf.pop(buf);
   }
   /**
-   * Query the occupied space in the queue. 
+   * Query the occupied space in the queue.
    *
    * @return The amount of samples that can be read with a guarantee of success.
    *

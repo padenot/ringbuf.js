@@ -74,7 +74,7 @@ export class ParameterReader {
   /**
    * @constructor
    * @param {RingBuffer} ringbuf A RingBuffer setup to hold Uint8.
-  */
+   */
   constructor(ringbuf) {
     const SIZE_ELEMENT = 5;
     this.ringbuf = ringbuf;
@@ -91,7 +91,7 @@ export class ParameterReader {
     if (this.ringbuf.empty()) {
       return false;
     }
-    var rv = this.ringbuf.pop(this.array);
+    const rv = this.ringbuf.pop(this.array);
     o.index = this.view.getUint8(0);
     o.value = this.view.getFloat32(1);
 

@@ -19,7 +19,7 @@ export class RingBuffer {
     if (!type.BYTES_PER_ELEMENT) {
       throw "Pass in a ArrayBuffer subclass";
     }
-    var bytes = 8 + (capacity + 1) * type.BYTES_PER_ELEMENT;
+    const bytes = 8 + (capacity + 1) * type.BYTES_PER_ELEMENT;
     return new SharedArrayBuffer(bytes);
   }
   /**
@@ -30,8 +30,10 @@ export class RingBuffer {
    * buffer will hold.
    */
   constructor(sab, type) {
-    if (!ArrayBuffer.__proto__.isPrototypeOf(type) &&
-      type.BYTES_PER_ELEMENT !== undefined) {
+    if (
+      !ArrayBuffer.__proto__.isPrototypeOf(type) &&
+      type.BYTES_PER_ELEMENT !== undefined
+    ) {
       throw "Pass a concrete typed array class as second argument";
     }
 
@@ -63,19 +65,19 @@ export class RingBuffer {
    * @return the number of elements written to the queue.
    */
   push(elements, length) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
     if ((wr + 1) % this._storage_capacity() == rd) {
       // full
       return 0;
     }
 
-    var len = length != undefined ? length : elements.length;
+    const len = length != undefined ? length : elements.length;
 
-    let to_write = Math.min(this._available_write(rd, wr), len);
-    let first_part = Math.min(this._storage_capacity() - wr, to_write);
-    let second_part = to_write - first_part;
+    const to_write = Math.min(this._available_write(rd, wr), len);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
 
     this._copy(elements, 0, this.storage, wr, first_part);
     this._copy(elements, first_part, this.storage, 0, second_part);
@@ -99,30 +101,38 @@ export class RingBuffer {
    * passed arrays to write to, such as `AudioData.copyTo`.
    * @param {number} amount The maximum number of elements to write to the ring
    * buffer. If amount is more than the number of slots available for writing,
-    * then the number of slots available for writing will be made available: no
-    * overwriting of elements can happen.
-    * @param {Function} cb A callback with two parameters, that are two typed
-    * array of the correct type, in which the data need to be copied. It is
-    * necessary to write exactly the number of elements determined by the size
-    * of the two typed arrays.
-    * @return The number of elements written to the queue.
+   * then the number of slots available for writing will be made available: no
+   * overwriting of elements can happen.
+   * @param {Function} cb A callback with two parameters, that are two typed
+   * array of the correct type, in which the data need to be copied. It is
+   * necessary to write exactly the number of elements determined by the size
+   * of the two typed arrays.
+   * @return The number of elements written to the queue.
    */
   writeCallback(amount, cb) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
     if ((wr + 1) % this._storage_capacity() == rd) {
       // full
       return 0;
     }
 
-    let to_write = Math.min(this._available_write(rd, wr), amount);
-    let first_part = Math.min(this._storage_capacity() - wr, to_write);
-    let second_part = to_write - first_part;
+    const to_write = Math.min(this._available_write(rd, wr), amount);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
 
     // This part will cause GC: don't use in the real time thread.
-    var first_part_buf = new this._type(this.storage.buffer, 8 + wr * 4, first_part);
-    var second_part_buf = new this._type(this.storage.buffer, 8 + 0, second_part);
+    const first_part_buf = new this._type(
+      this.storage.buffer,
+      8 + wr * 4,
+      first_part
+    );
+    const second_part_buf = new this._type(
+      this.storage.buffer,
+      8 + 0,
+      second_part
+    );
 
     cb(first_part_buf, second_part_buf);
 
@@ -148,19 +158,19 @@ export class RingBuffer {
    * @return The number of elements read from the queue.
    */
   pop(elements, length) {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
     if (wr == rd) {
       return 0;
     }
 
-    var len = length != undefined ? length : elements.length;
+    const len = length != undefined ? length : elements.length;
 
-    let to_read = Math.min(this._available_read(rd, wr), len);
+    const to_read = Math.min(this._available_read(rd, wr), len);
 
-    let first_part = Math.min(this._storage_capacity() - rd, to_read);
-    let second_part = to_read - first_part;
+    const first_part = Math.min(this._storage_capacity() - rd, to_read);
+    const second_part = to_read - first_part;
 
     this._copy(this.storage, rd, elements, 0, first_part);
     this._copy(this.storage, 0, elements, first_part, second_part);
@@ -176,8 +186,8 @@ export class RingBuffer {
    * pushed.
    */
   empty() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
     return wr == rd;
   }
@@ -187,8 +197,8 @@ export class RingBuffer {
    * on the write side: it can return true when something has just been popped.
    */
   full() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
     return (wr + 1) % this._storage_capacity() == rd;
   }
@@ -207,8 +217,8 @@ export class RingBuffer {
    * been enqueued.
    */
   available_read() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
     return this._available_read(rd, wr);
   }
 
@@ -218,8 +228,8 @@ export class RingBuffer {
    * has just been dequeued.
    */
   available_write() {
-    var rd = Atomics.load(this.read_ptr, 0);
-    var wr = Atomics.load(this.write_ptr, 0);
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
     return this._available_write(rd, wr);
   }
 
@@ -263,7 +273,7 @@ export class RingBuffer {
    * @private
    */
   _copy(input, offset_input, output, offset_output, size) {
-    for (var i = 0; i < size; i++) {
+    for (let i = 0; i < size; i++) {
       output[offset_output + i] = input[offset_input + i];
     }
   }

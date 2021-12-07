@@ -11,10 +11,10 @@
  */
 export function deinterleave(input, output) {
   const channel_count = input.length / 256;
-  if (output.length != channel_count) {
-    throw "not enough space in output arrays";
+  if (output.length !== channel_count) {
+    throw RangeError("not enough space in output arrays");
   }
-  for (let i = 0; i < channelCount; i++) {
+  for (let i = 0; i < channel_count; i++) {
     const out_channel = output[i];
     let interleaved_idx = i;
     for (let j = 0; j < 128; ++j) {
@@ -35,8 +35,8 @@ export function deinterleave(input, output) {
  * @param {Float32Array} output A Float32Array that is n*128 elements long.
  */
 export function interleave(input, output) {
-  if (input.length * 128 != output.length) {
-    throw "input and output of incompatible sizes";
+  if (input.length * 128 !== output.length) {
+    throw RangeError("input and output of incompatible sizes");
   }
   let out_idx = 0;
   for (let i = 0; i < 128; i++) {
@@ -66,8 +66,8 @@ export class AudioWriter {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Float32Array") {
-      throw "This class requires a ring buffer of Float32Array";
+    if (ringbuf.type() !== "Float32Array") {
+      throw TypeError("This class requires a ring buffer of Float32Array");
     }
     this.ringbuf = ringbuf;
   }
@@ -111,8 +111,8 @@ export class AudioReader {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Float32Array") {
-      throw "This class requires a ring buffer of Float32Array";
+    if (ringbuf.type() !== "Float32Array") {
+      throw TypeError("This class requires a ring buffer of Float32Array");
     }
     this.ringbuf = ringbuf;
   }

@@ -17,7 +17,7 @@ export class RingBuffer {
    */
   static getStorageForCapacity(capacity, type) {
     if (!type.BYTES_PER_ELEMENT) {
-      throw "Pass in a ArrayBuffer subclass";
+      throw TypeError("Pass in a ArrayBuffer subclass");
     }
     const bytes = 8 + (capacity + 1) * type.BYTES_PER_ELEMENT;
     return new SharedArrayBuffer(bytes);
@@ -30,11 +30,8 @@ export class RingBuffer {
    * buffer will hold.
    */
   constructor(sab, type) {
-    if (
-      !ArrayBuffer.__proto__.isPrototypeOf(type) &&
-      type.BYTES_PER_ELEMENT !== undefined
-    ) {
-      throw "Pass a concrete typed array class as second argument";
+    if (type.BYTES_PER_ELEMENT === undefined) {
+      throw TypeError("Pass a concrete typed array class as second argument");
     }
 
     // Maximum usable size is 1<<32 - type.BYTES_PER_ELEMENT bytes in the ring
@@ -68,12 +65,12 @@ export class RingBuffer {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
-    if ((wr + 1) % this._storage_capacity() == rd) {
+    if ((wr + 1) % this._storage_capacity() === rd) {
       // full
       return 0;
     }
 
-    const len = length != undefined ? length : elements.length;
+    const len = length !== undefined ? length : elements.length;
 
     const to_write = Math.min(this._available_write(rd, wr), len);
     const first_part = Math.min(this._storage_capacity() - wr, to_write);
@@ -113,7 +110,7 @@ export class RingBuffer {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
-    if ((wr + 1) % this._storage_capacity() == rd) {
+    if ((wr + 1) % this._storage_capacity() === rd) {
       // full
       return 0;
     }
@@ -161,11 +158,11 @@ export class RingBuffer {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
-    if (wr == rd) {
+    if (wr === rd) {
       return 0;
     }
 
-    const len = length != undefined ? length : elements.length;
+    const len = length !== undefined ? length : elements.length;
 
     const to_read = Math.min(this._available_read(rd, wr), len);
 
@@ -189,7 +186,7 @@ export class RingBuffer {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
-    return wr == rd;
+    return wr === rd;
   }
 
   /**
@@ -200,7 +197,7 @@ export class RingBuffer {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
-    return (wr + 1) % this._storage_capacity() == rd;
+    return (wr + 1) % this._storage_capacity() === rd;
   }
 
   /**

@@ -24,8 +24,8 @@ export class ParameterWriter {
    * @constructor
    */
   constructor(ringbuf) {
-    if (ringbuf.type() != "Uint8Array") {
-      throw "This class requires a ring buffer of Uint8Array";
+    if (ringbuf.type() !== "Uint8Array") {
+      throw TypeError("This class requires a ring buffer of Uint8Array");
     }
     const SIZE_ELEMENT = 5;
     this.ringbuf = ringbuf;
@@ -48,7 +48,7 @@ export class ParameterWriter {
     if (this.ringbuf.available_write() < SIZE_ELEMENT) {
       return false;
     }
-    return this.ringbuf.push(this.array) == SIZE_ELEMENT;
+    return this.ringbuf.push(this.array) === SIZE_ELEMENT;
   }
 }
 
@@ -95,6 +95,6 @@ export class ParameterReader {
     o.index = this.view.getUint8(0);
     o.value = this.view.getFloat32(1);
 
-    return true;
+    return rv === 2;
   }
 }

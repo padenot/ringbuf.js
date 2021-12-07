@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "rollup -c && cp dist/index.js public/example/",
-    "lint": "eslint example js tests server.js"
+    "lint": "eslint js server.js"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",

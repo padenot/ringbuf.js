@@ -8,3 +8,6 @@ build:
 
 check: build
 	node tests/test.mjs
+
+lint:
+	npm run-script lint

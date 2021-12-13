@@ -407,7 +407,8 @@ class RingBuffer {
    * @param {Number} length If passed, the maximum number of elements to pop. If
    * not passed, up to elements.length are popped.
    * @param {Number} offset If passed, an index in elements in which the data is
-    * written to. `elements.length - offset` must be greater or equal to `length`.
+   * written to. `elements.length - offset` must be greater or equal to
+   * `length`.
    * @return The number of elements read from the queue.
    */
   pop(elements, length, offset = 0) {

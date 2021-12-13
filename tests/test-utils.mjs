@@ -32,9 +32,9 @@ class SequenceGenerator {
   next() {
     return this.index++;
   }
-  fill(array, elementCount) {
+  fill(array, elementCount, offset = 0) {
     const len = elementCount !== undefined ? elementCount : array.length;
-    for (let i = 0; i < len; i++) {
+    for (let i = offset; i < len; i++) {
       array[i] = this.next();
     }
   }
@@ -48,14 +48,14 @@ class SequenceVerifier {
   constructor() {
     this.index = 0;
   }
-  check(toCheck, elementCount) {
+  check(toCheck, elementCount, offset = 0, str) {
     if (typeof toCheck === Number) {
       assert.equal(this.index, toCheck);
       this.index++;
     } else if (toCheck.length !== undefined) {
       const len = elementCount !== undefined ? elementCount : toCheck.length;
-      for (let i = 0; i < len; i++) {
-        assert.equal(this.index, toCheck[i]);
+      for (let i = offset; i < len; i++) {
+        assert.equal(this.index, toCheck[i], i);
         this.index++;
       }
     }

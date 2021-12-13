@@ -311,9 +311,11 @@ class RingBuffer {
    * @param {TypedArray} elements A typed array of the same type as passed in the ctor, to be written to the queue.
    * @param {Number} length If passed, the maximum number of elements to push.
    * If not passed, all elements in the input array are pushed.
+   * @param {Number} offset If passed, a starting index in elements from which
+   * the elements are read. If not passed, elements are read from index 0.
    * @return the number of elements written to the queue.
    */
-  push(elements, length) {
+  push(elements, length, offset = 0) {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
@@ -328,8 +330,8 @@ class RingBuffer {
     const first_part = Math.min(this._storage_capacity() - wr, to_write);
     const second_part = to_write - first_part;
 
-    this._copy(elements, 0, this.storage, wr, first_part);
-    this._copy(elements, first_part, this.storage, 0, second_part);
+    this._copy(elements, offset, this.storage, wr, first_part);
+    this._copy(elements, offset + first_part, this.storage, 0, second_part);
 
     // publish the enqueued data to the other side
     Atomics.store(
@@ -404,9 +406,11 @@ class RingBuffer {
    * queue will be written, starting at the beginning of the array.
    * @param {Number} length If passed, the maximum number of elements to pop. If
    * not passed, up to elements.length are popped.
+   * @param {Number} offset If passed, an index in elements in which the data is
+    * written to. `elements.length - offset` must be greater or equal to `length`.
    * @return The number of elements read from the queue.
    */
-  pop(elements, length) {
+  pop(elements, length, offset = 0) {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
 
@@ -415,14 +419,13 @@ class RingBuffer {
     }
 
     const len = length !== undefined ? length : elements.length;
-
     const to_read = Math.min(this._available_read(rd, wr), len);
 
     const first_part = Math.min(this._storage_capacity() - rd, to_read);
     const second_part = to_read - first_part;
 
-    this._copy(this.storage, rd, elements, 0, first_part);
-    this._copy(this.storage, 0, elements, first_part, second_part);
+    this._copy(this.storage, rd, elements, offset, first_part);
+    this._copy(this.storage, 0, elements, offset + first_part, second_part);
 
     Atomics.store(this.read_ptr, 0, (rd + to_read) % this._storage_capacity());
 

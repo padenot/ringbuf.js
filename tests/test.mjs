@@ -42,6 +42,56 @@ test("linearized symmetrical push/pop", () => {
   }
 });
 
+function checkNoCanaryTouched(array) {
+  for (var i = 2; i < array.length - 4; i++) {
+    assert.is.not(array[i] == Infinity, `Input canary found in output array at index ${i}`);
+  }
+  assert.ok(Number.isNaN(array[0]), `Output canary overwritten at index 0`);
+  assert.ok(Number.isNaN(array[1]), `Output canary overwritten at index 1`);
+  assert.ok(Number.isNaN(array[array.length - 1]), `Output canary overwritten at index ${array.length - 1}`);
+  assert.ok(Number.isNaN(array[array.length - 2]), `Output canary overwritten at index ${array.length - 2}`);
+}
+
+test("linearized symmetrical push/pop w/ offset", () => {
+  const iterationsTotal = 1000;
+  let iteration = iterationsTotal;
+  const rng = new SeededPRNG();
+  while (iteration--) {
+    const arraySize = rng.randomInt(48000);
+    const pushPopSize = Math.round(rng.random() * arraySize);
+    console.info(
+      `Starting iteration ${
+        iterationsTotal - iteration
+      } of ${iterationsTotal}, SAB size: ${arraySize}, push/pop size: ${pushPopSize}`
+    );
+    const canarySize = 4;
+    const storage = RingBuffer.getStorageForCapacity(arraySize, Float32Array);
+    const rb = new RingBuffer(storage, Float32Array);
+    const toPush = new Float32Array(pushPopSize + canarySize);
+    const toPop = new Float32Array(pushPopSize + canarySize);
+    // Surrounding the data, are 2 Infinity on each side in the input array, 2
+    // NaN on each side in the output array. This test checks that they are not
+    // overwritten.
+    toPush[0] = toPush[1] = toPush[toPush.length - 1] = toPush[toPush.length - 2] = Infinity;
+    toPop[0] = toPop[1] = toPop[toPop.length - 1] = toPop[toPop.length - 2] = Number.NaN;
+    const generator = new SequenceGenerator();
+    const verifier = new SequenceVerifier();
+    // Go around the ring buffer about 100 times for each test case
+    let step = Math.round((arraySize * 100) / pushPopSize);
+    while (step--) {
+      generator.fill(toPush, pushPopSize, 2);
+      rb.push(toPush, pushPopSize, 2);
+      assert.equal(rb.available_read(), pushPopSize);
+      assert.equal(rb.available_write(), rb.capacity() - pushPopSize);
+      rb.pop(toPop, pushPopSize, 2);
+      checkNoCanaryTouched(toPop);
+      assert.equal(rb.available_read(), 0);
+      assert.equal(rb.available_write(), rb.capacity());
+      verifier.check(toPop, pushPopSize, 2);
+    }
+  }
+});
+
 test("linarized asymmetrical push/pop", () => {
   const iterationsTotal = 1000;
   let iteration = iterationsTotal;
@@ -82,18 +132,18 @@ test("linarized asymmetrical push/pop", () => {
 });
 
 test("linearized asymmetrical random push/pop", () => {
-  const iterationsTotal = 1000;
+  const iterationsTotal = 1;
   let iteration = iterationsTotal;
   const rng = new SeededPRNG();
   while (iteration--) {
     const arraySize = rng.randomInt(48000);
     const maxPushSize = Math.round(rng.random() * arraySize);
     const maxPopSize = Math.round(rng.random() * arraySize);
+    const desc = `SAB size: ${arraySize}, max push size: ${maxPushSize}, max pop size: ${maxPopSize}`;
     console.info(
       `Starting iteration ${
         iterationsTotal - iteration
-      } of ${iterationsTotal}, SAB size: ${arraySize}, max push size: ${maxPushSize}, max pop size: ${maxPopSize}`
-    );
+      } of ${iterationsTotal} ` + desc);
     const storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
     const rb = new RingBuffer(storage, Uint32Array);
     assert.ok(rb.empty() && !rb.full());
@@ -105,20 +155,20 @@ test("linearized asymmetrical random push/pop", () => {
     let step = Math.round((arraySize * 100) / maxPushSize);
     let external_length = 0;
     while (step--) {
+      const stepStr = desc + `(${step})`;
       const max_to_write = Math.min(rb.available_write(), toPush.length);
       const to_write = rng.randomInt(max_to_write);
-
       generator.fill(toPush, to_write);
       external_length += to_write;
       rb.push(toPush, to_write);
-      assert.equal(rb.available_read(), external_length);
-      assert.equal(rb.available_write(), rb.capacity() - external_length);
+      assert.equal(rb.available_read(), external_length, stepStr);
+      assert.equal(rb.available_write(), rb.capacity() - external_length, stepStr);
       const to_pop = rng.randomInt(maxPopSize);
       const popped = rb.pop(toPop, to_pop);
       external_length -= popped;
-      assert.equal(rb.available_read(), external_length);
-      assert.equal(rb.available_write(), rb.capacity() - external_length);
-      verifier.check(toPop, popped);
+      assert.equal(rb.available_read(), external_length, stepStr);
+      assert.equal(rb.available_write(), rb.capacity() - external_length, stepStr);
+      verifier.check(toPop, popped, 0, stepStr);
     }
   }
 });

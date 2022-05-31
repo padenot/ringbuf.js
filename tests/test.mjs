@@ -131,6 +131,88 @@ test("linarized asymmetrical push/pop", () => {
   }
 });
 
+test("linarized asymmetrical writeCallback/pop", () => {
+  const iterationsTotal = 1000;
+  let iteration = iterationsTotal;
+  const rng = new SeededPRNG();
+  while (iteration--) {
+    const arraySize = rng.randomInt(48000);
+    const pushSize = Math.round(rng.random() * arraySize);
+    const popSize = Math.round(rng.random() * arraySize);
+    console.info(
+      `Starting iteration ${
+        iterationsTotal - iteration
+      } of ${iterationsTotal}, SAB size: ${arraySize}, push size: ${pushSize}, pop size: ${popSize}`
+    );
+    const storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
+    const rb = new RingBuffer(storage, Uint32Array);
+    assert.ok(rb.empty() && !rb.full());
+    const toPush = new Uint32Array(pushSize);
+    const toPop = new Uint32Array(popSize);
+    const generator = new SequenceGenerator();
+    const verifier = new SequenceVerifier();
+    // Go around the ring buffer about 100 times for each test case
+    let step = Math.round((arraySize * 100) / pushSize);
+    let external_length = 0;
+    while (step--) {
+      const to_write = Math.min(rb.available_write(), toPush.length);
+      external_length += to_write;
+      rb.writeCallback(to_write, function(first, second) {
+        generator.fill(first, first.length);
+        generator.fill(second, second.length);
+      });
+      assert.equal(rb.available_read(), external_length);
+      assert.equal(rb.available_write(), rb.capacity() - external_length);
+      const popped = rb.pop(toPop);
+      external_length -= popped;
+      assert.equal(rb.available_read(), external_length);
+      assert.equal(rb.available_write(), rb.capacity() - external_length);
+      verifier.check(toPop, popped);
+    }
+  }
+});
+
+test("linarized asymmetrical writeCallbackWithOffset/pop", () => {
+  const iterationsTotal = 1000;
+  let iteration = iterationsTotal;
+  const rng = new SeededPRNG();
+  while (iteration--) {
+    const arraySize = rng.randomInt(48000);
+    const pushSize = Math.round(rng.random() * arraySize);
+    const popSize = Math.round(rng.random() * arraySize);
+    console.info(
+      `Starting iteration ${
+        iterationsTotal - iteration
+      } of ${iterationsTotal}, SAB size: ${arraySize}, push size: ${pushSize}, pop size: ${popSize}`
+    );
+    const storage = RingBuffer.getStorageForCapacity(arraySize, Uint32Array);
+    const rb = new RingBuffer(storage, Uint32Array);
+    assert.ok(rb.empty() && !rb.full());
+    const toPush = new Uint32Array(pushSize);
+    const toPop = new Uint32Array(popSize);
+    const generator = new SequenceGenerator();
+    const verifier = new SequenceVerifier();
+    // Go around the ring buffer about 100 times for each test case
+    let step = Math.round((arraySize * 100) / pushSize);
+    let external_length = 0;
+    while (step--) {
+      const to_write = Math.min(rb.available_write(), toPush.length);
+      external_length += to_write;
+      rb.writeCallbackWithOffset(to_write, function(buf, first_offset, first_len, second_offset, second_len) {
+        generator.fill(buf, first_len, first_offset);
+        generator.fill(buf, second_len, second_offset);
+      });
+      assert.equal(rb.available_read(), external_length);
+      assert.equal(rb.available_write(), rb.capacity() - external_length);
+      const popped = rb.pop(toPop);
+      external_length -= popped;
+      assert.equal(rb.available_read(), external_length);
+      assert.equal(rb.available_write(), rb.capacity() - external_length);
+      verifier.check(toPop, popped);
+    }
+  }
+});
+
 test("linearized asymmetrical random push/pop", () => {
   const iterationsTotal = 1;
   let iteration = iterationsTotal;

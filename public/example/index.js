@@ -355,9 +355,12 @@ class RingBuffer {
    * then the number of slots available for writing will be made available: no
    * overwriting of elements can happen.
    * @param {Function} cb A callback with two parameters, that are two typed
-   * array of the correct type, in which the data need to be copied. It is
-   * necessary to write exactly the number of elements determined by the size
-   * of the two typed arrays.
+   * array of the correct type, in which the data need to be copied. If the
+   * callback doesn't return anything, it is assumed all the elements
+   * have been written to. Otherwise, it is assumed that the returned number is
+   * the number of elements that have been written to, and those elements have
+   * been written started at the beginning of the requested buffer space.
+    *
    * @return The number of elements written to the queue.
    */
   writeCallback(amount, cb) {
@@ -376,7 +379,7 @@ class RingBuffer {
     // This part will cause GC: don't use in the real time thread.
     const first_part_buf = new this._type(
       this.storage.buffer,
-      8 + wr * 4,
+      8 + wr * this.storage.BYTES_PER_ELEMENT,
       first_part
     );
     const second_part_buf = new this._type(
@@ -385,7 +388,56 @@ class RingBuffer {
       second_part
     );
 
-    cb(first_part_buf, second_part_buf);
+    var written = cb(first_part_buf, second_part_buf) || to_write;
+
+    // publish the enqueued data to the other side
+    Atomics.store(
+      this.write_ptr,
+      0,
+      (wr + to_write) % this._storage_capacity()
+    );
+
+    return to_write;
+  }
+
+  /**
+   * Write bytes to the ring buffer using a callback.
+   *
+   * This allows skipping copies if the API that produces the data writes is
+   * passed arrays to write to, such as `AudioData.copyTo`.
+   *
+   * @param {number} amount The maximum number of elements to write to the ring
+   * buffer. If amount is more than the number of slots available for writing,
+   * then the number of slots available for writing will be made available: no
+   * overwriting of elements can happen.
+   * @param {Function} cb A callback with five parameters:
+   *
+   * (1) The internal storage of the ring buffer as a typed array
+   * (2) An offset to start writing from
+   * (3) A number of elements to write at this offset
+   * (4) Another offset to start writing from
+   * (5) A number of elements to write at this second offset
+   *
+   * If the callback doesn't return anything, it is assumed all the elements
+   * have been written to. Otherwise, it is assumed that the returned number is
+   * the number of elements that have been written to, and those elements have
+   * been written started at the beginning of the requested buffer space.
+   * @return The number of elements written to the queue.
+   */
+  writeCallbackWithOffset(amount, cb) {
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
+
+    if ((wr + 1) % this._storage_capacity() === rd) {
+      // full
+      return 0;
+    }
+
+    const to_write = Math.min(this._available_write(rd, wr), amount);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
+
+    var written = cb(this.storage, wr, first_part, 0, second_part) || to_write;
 
     // publish the enqueued data to the other side
     Atomics.store(

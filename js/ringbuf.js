@@ -144,14 +144,50 @@ export class RingBuffer {
     return written;
   }
 
-    // publish the enqueued data to the other side
-    Atomics.store(
-      this.write_ptr,
-      0,
-      (wr + to_write) % this._storage_capacity()
-    );
+  /**
+   * Write bytes to the ring buffer using a callback.
+   *
+   * This allows skipping copies if the API that produces the data writes is
+   * passed arrays to write to, such as `AudioData.copyTo`.
+   *
+   * @param {number} amount The maximum number of elements to write to the ring
+   * buffer. If amount is more than the number of slots available for writing,
+   * then the number of slots available for writing will be made available: no
+   * overwriting of elements can happen.
+   * @param {Function} cb A callback with five parameters:
+   *
+   * (1) The internal storage of the ring buffer as a typed array
+   * (2) An offset to start writing from
+   * (3) A number of elements to write at this offset
+   * (4) Another offset to start writing from
+   * (5) A number of elements to write at this second offset
+   *
+   * If the callback doesn't return anything, it is assumed all the elements
+   * have been written to. Otherwise, it is assumed that the returned number is
+   * the number of elements that have been written to, and those elements have
+   * been written started at the beginning of the requested buffer space.
+   * @return The number of elements written to the queue.
+   */
+  writeCallbackWithOffset(amount, cb) {
+    const rd = Atomics.load(this.read_ptr, 0);
+    const wr = Atomics.load(this.write_ptr, 0);
 
-    return to_write;
+    if ((wr + 1) % this._storage_capacity() === rd) {
+      // full
+      return 0;
+    }
+
+    const to_write = Math.min(this._available_write(rd, wr), amount);
+    const first_part = Math.min(this._storage_capacity() - wr, to_write);
+    const second_part = to_write - first_part;
+
+    const written =
+      cb(this.storage, wr, first_part, 0, second_part) || to_write;
+
+    // publish the enqueued data to the other side
+    Atomics.store(this.write_ptr, 0, (wr + written) % this._storage_capacity());
+
+    return written;
   }
 
   /**

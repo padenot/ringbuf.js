@@ -469,10 +469,22 @@ class RingBuffer {
    * report less elements that is actually in the queue, when something has just
    * been enqueued.
    */
-  available_read() {
+  availableRead() {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
     return this._available_read(rd, wr);
+  }
+  /**
+   * Compatibility alias for availableRead().
+   *
+   * @return The number of elements available for reading. This can be late, and
+   * report less elements that is actually in the queue, when something has just
+   * been enqueued.
+   *
+   * @deprecated
+   */
+  available_read() {
+    return this.availableRead();
   }
 
   /**
@@ -480,10 +492,23 @@ class RingBuffer {
    * report less elements that is actually available for writing, when something
    * has just been dequeued.
    */
-  available_write() {
+  availableWrite() {
     const rd = Atomics.load(this.read_ptr, 0);
     const wr = Atomics.load(this.write_ptr, 0);
     return this._available_write(rd, wr);
+  }
+
+  /**
+   * Compatibility alias for availableWrite.
+   *
+   * @return The number of elements available for writing. This can be late, and
+   * report less elements that is actually available for writing, when something
+   * has just been dequeued.
+   *
+   * @deprecated
+   */
+  available_write() {
+    return this.availableWrite();
   }
 
   // private methods //

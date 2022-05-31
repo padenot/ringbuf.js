@@ -32,10 +32,14 @@ class SequenceGenerator {
   next() {
     return this.index++;
   }
-  fill(array, elementCount, offset = 0) {
-    const len = elementCount !== undefined ? elementCount : array.length;
+  fill(array, elementCount = array.length, offset = 0) {
+    if (offset + elementCount > array.length) {
+      throw `Attempting to enqueue ${elementCount} at ${offset} in an array of size ${array.length}`;
+    }
+    const len = offset == 0 ? elementCount : offset + elementCount;
     for (let i = offset; i < len; i++) {
-      array[i] = this.next();
+      var next = this.next();
+      array[i] = next;
     }
   }
   reset() {
@@ -48,12 +52,12 @@ class SequenceVerifier {
   constructor() {
     this.index = 0;
   }
-  check(toCheck, elementCount, offset = 0, str) {
+  check(toCheck, elementCount = toCheck.length, offset = 0) {
     if (typeof toCheck === Number) {
       assert.equal(this.index, toCheck);
       this.index++;
     } else if (toCheck.length !== undefined) {
-      const len = elementCount !== undefined ? elementCount : toCheck.length;
+      const len = offset == 0 ? elementCount : offset + elementCount;
       for (let i = offset; i < len; i++) {
         assert.equal(this.index, toCheck[i], i);
         this.index++;

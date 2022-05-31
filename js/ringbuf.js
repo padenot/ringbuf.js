@@ -127,7 +127,7 @@ export class RingBuffer {
     // This part will cause GC: don't use in the real time thread.
     const first_part_buf = new this._type(
       this.storage.buffer,
-      8 + wr * 4,
+      8 + wr * this.storage.BYTES_PER_ELEMENT,
       first_part
     );
     const second_part_buf = new this._type(

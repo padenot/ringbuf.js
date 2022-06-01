@@ -360,7 +360,7 @@ class RingBuffer {
    * have been written to. Otherwise, it is assumed that the returned number is
    * the number of elements that have been written to, and those elements have
    * been written started at the beginning of the requested buffer space.
-    *
+   *
    * @return The number of elements written to the queue.
    */
   writeCallback(amount, cb) {
@@ -388,16 +388,12 @@ class RingBuffer {
       second_part
     );
 
-    var written = cb(first_part_buf, second_part_buf) || to_write;
+    const written = cb(first_part_buf, second_part_buf) || to_write;
 
     // publish the enqueued data to the other side
-    Atomics.store(
-      this.write_ptr,
-      0,
-      (wr + to_write) % this._storage_capacity()
-    );
+    Atomics.store(this.write_ptr, 0, (wr + written) % this._storage_capacity());
 
-    return to_write;
+    return written;
   }
 
   /**
@@ -437,16 +433,13 @@ class RingBuffer {
     const first_part = Math.min(this._storage_capacity() - wr, to_write);
     const second_part = to_write - first_part;
 
-    var written = cb(this.storage, wr, first_part, 0, second_part) || to_write;
+    const written =
+      cb(this.storage, wr, first_part, 0, second_part) || to_write;
 
     // publish the enqueued data to the other side
-    Atomics.store(
-      this.write_ptr,
-      0,
-      (wr + to_write) % this._storage_capacity()
-    );
+    Atomics.store(this.write_ptr, 0, (wr + written) % this._storage_capacity());
 
-    return to_write;
+    return written;
   }
 
   /**

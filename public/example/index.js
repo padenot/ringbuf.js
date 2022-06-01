@@ -246,7 +246,7 @@ class ParameterReader {
     o.index = this.view.getUint8(0);
     o.value = this.view.getFloat32(1);
 
-    return rv === 2;
+    return rv === this.array.length;
   }
 }
 

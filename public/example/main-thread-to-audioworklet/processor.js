@@ -22,7 +22,6 @@ class Processor extends AudioWorkletProcessor {
   process(inputs, outputs, parameters) {
     // Get any param changes
     if (this._param_reader.dequeue_change(this.o)) {
-      console.log("param change: ", this.o.index, this.o.value);
       this.amp = this.o.value;
     }
 

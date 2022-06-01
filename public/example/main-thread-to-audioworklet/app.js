@@ -48,7 +48,9 @@ URLFromFiles(["processor.js", "../index.js"]).then((e) => {
 
       amp.addEventListener("input", (e) => {
         ampLabel.innerText = e.target.value;
-        paramWriter.enqueue_change(0, e.target.value);
+        if (!paramWriter.enqueue_change(0, e.target.value)) {
+          console.error("Couldn't enqueue.");
+        }
       });
     });
   }

@@ -9,7 +9,7 @@ function readFromQueue() {
   }
   const segment = new Int16Array(samples_read);
   for (let i = 0; i < samples_read; i++) {
-    segment[i] = Math.min(Math.max(this.staging[i], -1.0), 1.0) * (2 << 14);
+    segment[i] = Math.min(Math.max(this.staging[i], -1.0), 1.0) * (2 << 14 - 1);
   }
   pcm.push(segment);
   return samples_read;

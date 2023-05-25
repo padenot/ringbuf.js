@@ -78,17 +78,14 @@ Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Embedder-Policy: require-corp
 ```
 
-As of 2021-11-09, the following browsers are compatible:
+As of 2023-05-25, the following browsers are compatible:
 
 - Firefox Desktop all current versions including current ESR
 - Firefox for Android all current versions
-- Chrome Desktop and (usually) Chromium-based browsers (for a long time)
-- Chrome for Android version 88 and later and browsers based on Chrome version
-    88 and later
-- Safari run in the following way:
-    `__XPC_JSC_useSharedArrayBuffer=1 open -a "Safari"`
-- Safari Tech Preview's current version
-
+- Chrome Desktop and Chromium-based browsers (for a long time)
+- Chrome for Android
+- Safari
+ 
 ## License
 
 Mozilla Public License 2.0

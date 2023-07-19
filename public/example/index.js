@@ -14,9 +14,9 @@ Object.defineProperty(exports, '__esModule', { value: true });
  * @param {Float32Array} output is an array of 128-frames arrays.
  */
 function deinterleave(input, output) {
-  const channel_count = input.length / 256;
+  const channel_count = input.length / 128;
   if (output.length !== channel_count) {
-    throw RangeError("not enough space in output arrays");
+    throw RangeError(`not enough space in output arrays ${output.length} != ${channel_count}`);
   }
   for (let i = 0; i < channel_count; i++) {
     const out_channel = output[i];

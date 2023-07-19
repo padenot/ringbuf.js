@@ -60,5 +60,5 @@ http
 console.log(
   "Static file server running at\n  => https://localhost:" +
     port +
-    "/\nCTRL + C to shutdown"
+    "/\nCTRL + C to shutdown",
 );

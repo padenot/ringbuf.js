@@ -85,7 +85,7 @@ export class RingBuffer {
     Atomics.store(
       this.write_ptr,
       0,
-      (wr + to_write) % this._storage_capacity()
+      (wr + to_write) % this._storage_capacity(),
     );
 
     return to_write;
@@ -128,12 +128,12 @@ export class RingBuffer {
     const first_part_buf = new this._type(
       this.storage.buffer,
       8 + wr * this.storage.BYTES_PER_ELEMENT,
-      first_part
+      first_part,
     );
     const second_part_buf = new this._type(
       this.storage.buffer,
       8 + 0,
-      second_part
+      second_part,
     );
 
     const written = cb(first_part_buf, second_part_buf) || to_write;

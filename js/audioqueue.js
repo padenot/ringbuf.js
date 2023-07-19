@@ -12,7 +12,9 @@
 export function deinterleave(input, output) {
   const channel_count = input.length / 128;
   if (output.length !== channel_count) {
-    throw RangeError(`not enough space in output arrays ${output.length} != ${channel_count}`);
+    throw RangeError(
+      `not enough space in output arrays ${output.length} != ${channel_count}`,
+    );
   }
   for (let i = 0; i < channel_count; i++) {
     const out_channel = output[i];

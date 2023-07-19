@@ -1,7 +1,7 @@
 // tests/demo.js
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { RingBuffer } from "../dist/index.mjs";
+import { RingBuffer, interleave, deinterleave } from "../dist/index.mjs";
 import { Worker } from "worker_threads";
 import {
   SequenceGenerator,
@@ -309,6 +309,33 @@ test("SPSC asymmetrical random push/pop", async () => {
   });
   await p;
   worker.terminate();
+});
+
+test("Test interleave / deinterleave", async () => {
+  for (var channels = 1; channels <= 8; channels++) {
+  let input = Array.from(Array(128 * channels).keys());
+  let output = [];
+  for (let i = 0; i < channels; i++) {
+    output.push(new Array(128));
+  }
+
+  deinterleave(input, output);
+
+  let acc = 0;
+  for (let j = 0; j < 128; j++) {
+    for (let i = 0; i < channels; i++) {
+      assert.equal(output[i][j], acc++);
+    }
+  }
+
+  let roundtrip = new Array(128 * channels);
+  interleave(output, roundtrip);
+
+  for (let i = 0; i < roundtrip.length; i++) {
+    assert.equal(input[i], roundtrip[i]);
+  }
+}
+
 });
 
 test.run();

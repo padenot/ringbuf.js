@@ -1,6 +1,6 @@
 {
   "name": "ringbuf.js",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Wait-free thread-safe single-consumer single-producer ring buffer using SharedArrayBuffer.",
   "author": "Paul Adenot <padenot@mozilla.com>",
   "license": "MPL-2.0",
@@ -24,7 +24,6 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-prettier": "^5.0.0",
-    "jaguarjs-jsdoc": "^1.0.2",
     "jsdoc": "^4.0.2",
     "prettier": "^3",
     "rollup": "^1.30.1",

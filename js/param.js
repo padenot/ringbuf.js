@@ -43,11 +43,11 @@ export class ParameterWriter {
    */
   enqueue_change(index, value) {
     const SIZE_ELEMENT = 5;
-    this.view.setUint8(0, index);
-    this.view.setFloat32(1, value);
     if (this.ringbuf.available_write() < SIZE_ELEMENT) {
       return false;
     }
+    this.view.setUint8(0, index);
+    this.view.setFloat32(1, value);
     return this.ringbuf.push(this.array) === SIZE_ELEMENT;
   }
 }
